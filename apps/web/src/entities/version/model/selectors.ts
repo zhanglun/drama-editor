@@ -1,0 +1,7 @@
+export { useVersionStore } from './store'
+
+export const useVersions = () => useVersionStore((state) => state.versions)
+
+export const useCurrentVersion = () => useVersionStore((state) => state.currentVersion)
+
+export const useIsLoading = () => useVersionStore((state) => state.isLoading)

@@ -1,0 +1,25 @@
+{
+  "name": "drama-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A web-based script writing and editing tool for short dramas",
+  "scripts": {
+    "dev": "pnpm --filter @drama-editor/web dev",
+    "build": "pnpm --filter @drama-editor/web build",
+    "server": "cd apps/server && go run cmd/main.go",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "keywords": [
+    "script",
+    "editor",
+    "drama",
+    "screenwriting"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

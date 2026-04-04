@@ -1,0 +1,209 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Flash highlight animation for inserted elements */
+@keyframes flash-highlight {
+  0% {
+    background-color: rgba(59, 130, 246, 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash-highlight {
+  animation: flash-highlight 0.8s ease-out;
+}
+
+.slash-menu {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  min-width: 240px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.slash-menu-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 8px;
+}
+
+.slash-menu-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.slash-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slash-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background-color 0.15s;
+}
+
+.slash-menu-item:hover,
+.slash-menu-item.selected {
+  background-color: #f3f4f6;
+}
+
+.slash-menu-item.selected {
+  background-color: #eff6ff;
+}
+
+.slash-menu-icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+}
+
+.slash-menu-content {
+  flex: 1;
+}
+
+.slash-menu-title {
+  font-weight: 500;
+  color: #111827;
+  font-size: 14px;
+}
+
+.slash-menu-description {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.slash-menu-empty {
+  padding: 12px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.mention-menu {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  min-width: 200px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.mention-menu-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 8px;
+}
+
+.mention-menu-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.mention-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mention-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background-color 0.15s;
+}
+
+.mention-menu-item:hover,
+.mention-menu-item.selected {
+  background-color: #f3f4f6;
+}
+
+.mention-menu-item.selected {
+  background-color: #eff6ff;
+}
+
+.mention-menu-avatar {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.mention-menu-name {
+  font-weight: 500;
+  color: #111827;
+  font-size: 14px;
+}
+
+.mention-menu-empty {
+  padding: 12px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.tiptap p .mention {
+  background-color: #dbeafe;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-weight: 500;
+  color: #1d4ed8;
+}
