@@ -59,7 +59,6 @@ export const Action = Node.create<ActionOptions>({
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
-            content: [{ type: 'text', text: '' }],
           })
         },
     }

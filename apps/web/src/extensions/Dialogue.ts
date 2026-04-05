@@ -88,7 +88,6 @@ export const Dialogue = Node.create<DialogueOptions>({
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
-            content: [{ type: 'text', text: '' }],
             attrs: attributes,
           })
         },

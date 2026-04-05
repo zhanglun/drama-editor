@@ -92,10 +92,10 @@ export function SlashMenu({ items, command }: SlashMenuProps) {
                 })}
               </div>
             )}
-            {formatingItems.length > 0 && (
+            {formattingItems.length > 0 && (
               <div className="slash-menu-group">
                 <div className="slash-menu-group-title">文本格式</div>
-                {formatingItems.map((item) => {
+                {formattingItems.map((item) => {
                   const globalIndex = filteredItems.indexOf(item)
                   return (
                     <button

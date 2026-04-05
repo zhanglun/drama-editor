@@ -424,3 +424,20 @@ body {
     background-color: #111827;
   }
 }
+
+/* Scene heading style */
+.scene-heading {
+  width: 100%;
+  color: #2563eb;
+  font-weight: bold;
+  text-align: center;
+  padding: 0.75rem 0;
+  margin: 0.5rem 0;
+  background-color: #eff6ff;
+  border-radius: 4px;
+}
+
+.scene-heading::before {
+  content: '🎬 ';
+  font-size: 1.1em;
+}

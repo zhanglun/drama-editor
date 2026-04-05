@@ -59,7 +59,6 @@ export const Scene = Node.create<SceneOptions>({
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
-            content: [{ type: 'text', text: '' }],
             attrs: attributes,
           })
         },

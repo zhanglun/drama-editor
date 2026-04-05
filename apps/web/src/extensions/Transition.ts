@@ -59,7 +59,6 @@ export const Transition = Node.create<TransitionOptions>({
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
-            content: [{ type: 'text', text: '' }],
           })
         },
     }
