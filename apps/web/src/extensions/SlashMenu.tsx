@@ -1,11 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
+import type { SlashMenuItem } from './SlashCommand'
 
-export interface SlashMenuItem {
-  title: string
-  description: string
-  command: string
-  icon: string
-}
+export { type SlashMenuItem }
 
 interface SlashMenuProps {
   items: SlashMenuItem[]
@@ -20,6 +16,9 @@ export function SlashMenu({ items, command }: SlashMenuProps) {
     item.title.toLowerCase().includes(query.toLowerCase()) ||
     item.description.toLowerCase().includes(query.toLowerCase())
   )
+
+  const scriptItems = filteredItems.filter(item => item.group === 'script' || !item.group)
+  const formattingItems = filteredItems.filter(item => item.group === 'formatting')
 
   const selectItem = useCallback((index: number) => {
     const item = filteredItems[index]
@@ -70,20 +69,52 @@ export function SlashMenu({ items, command }: SlashMenuProps) {
         {filteredItems.length === 0 ? (
           <div className="slash-menu-empty">没有匹配的命令</div>
         ) : (
-          filteredItems.map((item, index) => (
-            <button
-              key={item.command}
-              className={`slash-menu-item ${index === selectedIndex ? 'selected' : ''}`}
-              onClick={() => selectItem(index)}
-              onMouseEnter={() => setSelectedIndex(index)}
-            >
-              <span className="slash-menu-icon">{item.icon}</span>
-              <div className="slash-menu-content">
-                <div className="slash-menu-title">{item.title}</div>
-                <div className="slash-menu-description">{item.description}</div>
+          <>
+            {scriptItems.length > 0 && (
+              <div className="slash-menu-group">
+                <div className="slash-menu-group-title">剧本元素</div>
+                {scriptItems.map((item) => {
+                  const globalIndex = filteredItems.indexOf(item)
+                  return (
+                    <button
+                      key={item.command}
+                      className={`slash-menu-item ${globalIndex === selectedIndex ? 'selected' : ''}`}
+                      onClick={() => selectItem(globalIndex)}
+                      onMouseEnter={() => setSelectedIndex(globalIndex)}
+                    >
+                      <span className="slash-menu-icon">{item.icon}</span>
+                      <div className="slash-menu-content">
+                        <div className="slash-menu-title">{item.title}</div>
+                        <div className="slash-menu-description">{item.description}</div>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
-            </button>
-          ))
+            )}
+            {formatingItems.length > 0 && (
+              <div className="slash-menu-group">
+                <div className="slash-menu-group-title">文本格式</div>
+                {formatingItems.map((item) => {
+                  const globalIndex = filteredItems.indexOf(item)
+                  return (
+                    <button
+                      key={item.command}
+                      className={`slash-menu-item ${globalIndex === selectedIndex ? 'selected' : ''}`}
+                      onClick={() => selectItem(globalIndex)}
+                      onMouseEnter={() => setSelectedIndex(globalIndex)}
+                    >
+                      <span className="slash-menu-icon">{item.icon}</span>
+                      <div className="slash-menu-content">
+                        <div className="slash-menu-title">{item.title}</div>
+                        <div className="slash-menu-description">{item.description}</div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
