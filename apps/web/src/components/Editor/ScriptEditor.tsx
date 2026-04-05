@@ -8,7 +8,6 @@ import { Scene, Dialogue, Action, Transition, SlashCommand } from '../../extensi
 import { CharacterMention } from '../../extensions/CharacterMention'
 import { extractCharacters } from '../../utils/characterExtractor'
 import type { ScriptContent } from '../../types'
-import type { Editor } from '@tiptap/core'
 
 type LineNumbersMode = 'line' | 'scene'
 
@@ -26,13 +25,14 @@ export function ScriptEditor({
   onSaveVersion,
 }: ScriptEditorProps) {
   const [lineNumbersMode, setLineNumbersMode] = useState<LineNumbersMode>('line')
+  const [lineHeights, setLineHeights] = useState<{ number: number; type: 'line' | 'scene'; pos: number; height: number }[]>([])
   const lineNumbersRef = useRef<HTMLDivElement>(null)
   const editorContainerRef = useRef<HTMLDivElement>(null)
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      CharacterCount,
+      CharacterCount.configure(),
       Placeholder.configure({
         placeholder,
       }),
@@ -41,21 +41,8 @@ export function ScriptEditor({
       Action,
       Transition,
       SlashCommand,
-      CharacterMention.configure({
-        suggestion: {
-          items: ({ query }: { query: string }) => {
-            const characters = content?.characters || []
-            return characters
-              .filter(name => name.toLowerCase().includes(query.toLowerCase()))
-              .map(name => ({
-                id: name,
-                label: name,
-              }))
-          },
-        },
-      }),
     ],
-    content: content?.content as any,
+    content: content || { type: 'doc', content: [] },
     onUpdate: ({ editor }) => {
       const json = editor.getJSON()
       const characters = extractCharacters(json)
@@ -82,8 +69,52 @@ export function ScriptEditor({
       if (JSON.stringify(currentContent) !== JSON.stringify(content.content)) {
         editor.commands.setContent(content.content)
       }
+      calculateLineHeights()
     }
   }, [content, editor])
+
+  const calculateLineHeights = () => {
+    if (!editor || !editorContainerRef.current) return
+
+    const editorEl = editorContainerRef.current.querySelector('.ProseMirror') as HTMLElement
+    if (!editorEl) return
+
+    const nodes = editorEl.querySelectorAll('p, div[data-type="scene"], div[data-type="dialogue"], div[data-type="action"], div[data-type="transition"]')
+    
+    const newLineHeights: { number: number; type: 'line' | 'scene'; pos: number; height: number }[] = []
+    const doc = editor.state.doc
+    let lineNumber = 1
+    let sceneNumber = 0
+    let nodeIndex = 0
+    
+    doc.descendants((node, pos) => {
+      if (node.type.name === 'scene') {
+        sceneNumber++
+        const domNode = nodes[nodeIndex] as HTMLElement
+        const height = domNode ? domNode.getBoundingClientRect().height : 28
+        newLineHeights.push({ number: sceneNumber, type: 'scene', pos, height })
+        nodeIndex++
+      } else if (node.type.name === 'paragraph' || 
+                 node.type.name === 'dialogue' || 
+                 node.type.name === 'action' || 
+                 node.type.name === 'transition') {
+        if (lineNumbersMode === 'line') {
+          const domNode = nodes[nodeIndex] as HTMLElement
+          const height = domNode ? domNode.getBoundingClientRect().height : 28
+          newLineHeights.push({ number: lineNumber, type: 'line', pos, height })
+          lineNumber++
+          nodeIndex++
+        }
+      }
+    })
+    
+    setLineHeights(newLineHeights)
+  }
+
+  useEffect(() => {
+    if (!editor) return
+    calculateLineHeights()
+  }, [editor])
 
   // 同步行号滚动
   useEffect(() => {
@@ -163,8 +194,6 @@ export function ScriptEditor({
   const toggleLineNumbersMode = () => {
     setLineNumbersMode(prev => prev === 'line' ? 'scene' : 'line')
   }
-
-  const lineNumbers = getLineNumbers()
 
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
@@ -270,16 +299,16 @@ export function ScriptEditor({
         <div 
           ref={lineNumbersRef}
           className="line-numbers-container border-r border-gray-200 bg-gray-50 overflow-y-hidden"
-          style={{ width: '48px', minWidth: '48px' }}
+          style={{ width: '48px', minWidth: '48px', paddingTop: '32px', paddingBottom: '32px' }}
         >
-          {lineNumbers.map((line, index) => (
+          {lineHeights.map((line, index) => (
             <div
               key={index}
-              className={`line-number-item px-2 py-1 text-right text-sm cursor-pointer hover:bg-gray-200 ${
+              className={`line-number-item px-2 text-right text-sm cursor-pointer hover:bg-gray-200 flex items-start ${
                 line.type === 'scene' ? 'font-bold text-blue-600' : 'text-gray-500'
               }`}
               onClick={() => handleLineNumberClick(line.pos)}
-              style={{ minHeight: '24px' }}
+              style={{ height: `${line.height}px` }}
             >
               {line.number}
             </div>

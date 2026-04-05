@@ -38,13 +38,13 @@
 
 ## 5. 新功能：Mention（@ 触发角色选择）
 
-- [ ] 5.1 创建 CharacterMention.ts 扩展
-- [ ] 5.2 创建 MentionList.tsx 组件（角色选择 UI）
-- [ ] 5.3 从 scriptStore 读取角色列表作为数据源
-- [ ] 5.4 实现角色搜索过滤
-- [ ] 5.5 实现选择后插入角色名
-- [ ] 5.6 添加 mention 样式（背景色、圆角）
-- [ ] 5.7 集成到 ScriptEditor
+- [x] 5.1 创建 CharacterMention.ts 扩展
+- [x] 5.2 创建 MentionList.tsx 组件（角色选择 UI）
+- [x] 5.3 从 scriptStore 读取角色列表作为数据源
+- [x] 5.4 实现角色搜索过滤
+- [x] 5.5 实现选择后插入角色名
+- [x] 5.6 添加 mention 样式（背景色、圆角）
+- [x] 5.7 集成到 ScriptEditor
 - [ ] 5.8 测试 Mention：输入 @ 显示角色列表，选择插入
 
 ## 6. 新功能：行号显示
