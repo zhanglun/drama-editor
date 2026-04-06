@@ -1,4 +1,5 @@
 import { ScriptList } from './components/ScriptList/ScriptList'
+import { CharacterCanvasPage } from './pages/CharacterCanvasPage'
 
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useCallback } from 'react'
@@ -54,6 +55,7 @@ function App() {
             <Route path="/scripts/:id" element={<ScriptEditorPage />} />
             <Route path="/scripts/:id/versions" element={<VersionsPage />} />
             <Route path="/scripts/:id/versions/:versionId/diff" element={<DiffPage />} />
+            <Route path="/scripts/:id/characters/canvas" element={<CharacterCanvasPage />} />
           </Routes>
         </main>
       </div>
@@ -340,6 +342,7 @@ function ScriptEditorPage() {
           {/* Editor */}
           <div className="flex-1 min-w-0">
             <ScriptEditor
+              key={id}
               content={editorContent || undefined}
               onChange={handleContentChange}
             />

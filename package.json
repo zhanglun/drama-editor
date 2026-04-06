@@ -7,6 +7,8 @@
     "dev": "pnpm --filter @drama-editor/web dev",
     "build": "pnpm --filter @drama-editor/web build",
     "server": "cd apps/server && go run cmd/main.go",
+    "seed": "tsx supabase/seeds/seed-runner.ts",
+    "seed:check": "tsx supabase/seeds/seed-runner.ts --check",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck"
   },
@@ -21,5 +23,10 @@
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^17.4.0",
+    "tsx": "^4.7.0"
   }
 }

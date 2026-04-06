@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { Script, ScriptContent } from '../types'
+import { extractCharacters } from '../utils/characterExtractor'
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'unsaved'
 
@@ -61,21 +62,33 @@ export const useScriptStore = create<ScriptStore>()(
             const response = await fetch(`${API_BASE}/scripts`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ title, description: '', content: null }),
+              body: JSON.stringify({
+                title,
+                description: '',
+                content: {
+                  type: 'doc',
+                  content: [],
+                  characters: [],  // 初始化空数组
+                  metadata: {}
+                }
+              })
             })
             if (!response.ok) throw new Error('Failed to create script')
             const script = await response.json()
+            
+            // 如果 content 存在但 characters 字段缺失,从内容中提取角色
+            if (script.content && !script.content.characters) {
+              script.content.characters = extractCharacters(script.content)
+            }
+            
             set((state) => ({ 
               scripts: [...state.scripts, script],
               currentScript: script,
               isLoading: false,
-              saveStatus: 'saved',
-              lastSavedAt: new Date(),
-              hasUnsavedChanges: false,
             }))
             return script
           } catch (error) {
-            set({ error: (error as Error).message, isLoading: false })
+            set({ error: (error as Error).message })
             throw error
           }
         },
@@ -160,6 +173,12 @@ export const useScriptStore = create<ScriptStore>()(
             const response = await fetch(`${API_BASE}/scripts/${id}`)
             if (!response.ok) throw new Error('Failed to load script')
             const script = await response.json()
+            
+            // 如果 content 存在但 characters 字段缺失，从内容中提取角色
+            if (script.content && !script.content.characters) {
+              script.content.characters = extractCharacters(script.content)
+            }
+            
             set({ currentScript: script, isLoading: false, saveStatus: 'saved', lastSavedAt: new Date() })
             return script
           } catch (error) {

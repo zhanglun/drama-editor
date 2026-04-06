@@ -1,4 +1,4 @@
-import { useEditor, EditorContent } from '@tiptap/react'
+ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import CharacterCount from '@tiptap/extension-character-count'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -14,15 +14,13 @@ import { Save } from 'lucide-react'
 import { Scene, Dialogue, Action, Transition, SlashCommand } from '../../extensions'
 import { extractCharacters } from '../../utils/characterExtractor'
 import type { ScriptContent } from '../../types'
+import CharacterMention from '../../extensions/CharacterMention'
+
+import CharacterMentionNode from '../../extensions/CharacterMentionNode'
 
 type LineNumbersMode = 'line' | 'scene'
 
-interface ScriptEditorProps {
-  content?: ScriptContent
-  onChange?: (content: ScriptContent) => void
-  placeholder?: string
-  onSaveVersion?: () => void
-}
+
 
 export function ScriptEditor({ 
   content, 

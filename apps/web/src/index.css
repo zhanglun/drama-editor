@@ -31,15 +31,20 @@ body {
   pointer-events: none;
 }
 
-/* Flash highlight animation for inserted elements */
-@keyframes flash-highlight {
-  0% {
-    background-color: rgba(59, 130, 246, 0.3);
-  }
-  100% {
-    background-color: transparent;
-  }
+/* Character mention styling */
+.character-mention {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: #E0F2FE;
+  color: #0369A1;
+  font-weight: 500;
+  cursor: default;
+  user-select: all;
 }
+
+
 
 .flash-highlight {
   animation: flash-highlight 0.8s ease-out;

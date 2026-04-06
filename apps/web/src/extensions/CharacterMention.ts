@@ -3,6 +3,7 @@ import { ReactRenderer } from '@tiptap/react'
 import Suggestion from '@tiptap/suggestion'
 import tippy, { Instance } from 'tippy.js'
 import { MentionList } from './MentionList'
+import { CharacterMentionNode } from './CharacterMentionNode'
 import 'tippy.js/dist/tippy.css'
 
 interface MentionItem {
@@ -34,10 +35,15 @@ export const CharacterMention = Extension.create<CharacterMentionOptions>({
           editor.chain()
             .focus()
             .insertContent({
-              type: 'text',
-              text: props.label + ' ',
+              type: 'characterMention',
+              attrs: {
+                id: props.id,
+                label: props.label,
+              },
             })
             .run()
+          
+          popup?.hide()
         },
         items: ({ query }: { query: string }) => {
           const characters = this.options.characters || []
@@ -63,8 +69,11 @@ export const CharacterMention = Extension.create<CharacterMentionOptions>({
                     props.editor.chain()
                       .focus()
                       .insertContent({
-                        type: 'text',
-                        text: item.label + ' ',
+                        type: 'characterMention',
+                        attrs: {
+                          id: item.id,
+                          label: item.label,
+                        },
                       })
                       .run()
                     
@@ -73,43 +82,43 @@ export const CharacterMention = Extension.create<CharacterMentionOptions>({
                 },
                 editor: props.editor,
               })
+            })
 
-              popup = tippy(document.body, {
-                getReferenceClientRect: props.clientRect,
-                appendTo: () => document.body,
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: 'manual',
-                placement: 'bottom-start',
-              })
-            },
+            popup = tippy(document.body, {
+              getReferenceClientRect: props.clientRect,
+              appendTo: () => document.body,
+              content: component.element,
+              showOnCreate: true,
+              interactive: true,
+              trigger: 'manual',
+              placement: 'bottom-start',
+            })
+          },
 
-            onUpdate: (props: any) => {
-              component?.updateProps({
-                items: props.items,
-              })
+          onUpdate: (props: any) => {
+            component?.updateProps({
+              items: props.items,
+            })
 
-              if (!popup) return
+            if (!popup) return
 
-              popup.setProps({
-                getReferenceClientRect: props.clientRect,
-              })
-            },
+            popup.setProps({
+              getReferenceClientRect: props.clientRect,
+            })
+          },
 
-            onKeyDown: (props: { event: KeyboardEvent }) => {
-              if (props.event.key === 'Escape') {
-                popup?.hide()
-                return true
-              }
-              return false
-            },
+          onKeyDown: (props: { event: KeyboardEvent }) => {
+            if (props.event.key === 'Escape') {
+              popup?.hide()
+              return true
+            }
+            return false
+          },
 
-            onExit: () => {
-              popup?.destroy()
-              component?.destroy()
-            },
-          }
+          onExit: () => {
+            popup?.destroy()
+            component?.destroy()
+          },
         },
       }),
     ]

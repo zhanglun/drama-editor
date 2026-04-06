@@ -1,15 +1,32 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { LayoutGrid } from 'lucide-react'
 import { useScriptStore } from '../../stores/scriptStore'
 import type { ScriptContent } from '../../types'
-import { updateCharactersInContent } from '../../utils/characterExtractor'
+import { updateCharactersInContent, extractCharacters } from '../../utils/characterExtractor'
 
 export function CharacterPanel() {
   const { currentScript, updateScript } = useScriptStore()
+  const navigate = useNavigate()
   const [newCharacterName, setNewCharacterName] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingName, setEditingName] = useState('')
 
-  const characters = currentScript?.content?.characters || []
+  const characters = currentScript?.content?.characters?.length > 0
+    ? currentScript.content.characters
+    : currentScript?.content
+    ? extractCharacters(currentScript.content)
+    : []
+
+  const getUpdatedCharacters = (updatedCharacters: string[]): ScriptContent => {
+    const base = currentScript.content
+    return {
+      type: 'doc',
+      content: base?.content || [],
+      characters: updatedCharacters,
+      metadata: base?.metadata
+    }
+  }
 
   const getUpdatedContent = (updatedCharacters: string[]): ScriptContent => {
     const base = currentScript?.content
@@ -107,11 +124,25 @@ export function CharacterPanel() {
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-gray-200">
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">角色列表</h3>
-        <p className="text-sm text-gray-500 mt-1">
-          共 {characters.length} 个角色
-        </p>
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">角色列表</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            共 {characters.length} 个角色
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            if (currentScript) {
+              navigate(`/scripts/${currentScript.id}/characters/canvas`)
+            }
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-md transition-colors"
+          title="画布视图"
+        >
+          <LayoutGrid className="w-4 h-4" />
+          <span>画布视图</span>
+        </button>
       </div>
 
       <div className="p-4 border-b border-gray-200">
