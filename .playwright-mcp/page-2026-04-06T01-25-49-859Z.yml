@@ -1,0 +1,16 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e7]:
+      - link "Drama Editor" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=e9]:
+        - link "剧本列表" [active] [ref=e10] [cursor=pointer]:
+          - /url: /scripts
+        - link "新建剧本" [ref=e11] [cursor=pointer]:
+          - /url: /scripts/new
+  - main [ref=e12]:
+    - generic [ref=e19]:
+      - img [ref=e20]
+      - heading "Error loading scripts" [level=3] [ref=e22]
+      - paragraph [ref=e23]: Failed to fetch
+      - button "Try again" [ref=e25] [cursor=pointer]

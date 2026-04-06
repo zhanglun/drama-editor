@@ -1,0 +1,16 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e7]:
+      - link "Drama Editor" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=e9]:
+        - link "剧本列表" [ref=e10] [cursor=pointer]:
+          - /url: /scripts
+        - link "新建剧本" [ref=e11] [cursor=pointer]:
+          - /url: /scripts/new
+  - main [ref=e12]:
+    - generic [ref=e14]:
+      - heading "欢迎使用 Drama Editor" [level=1] [ref=e15]
+      - paragraph [ref=e16]: 专业的短剧剧本创作工具
+      - link "开始创作" [ref=e17] [cursor=pointer]:
+        - /url: /scripts/new
