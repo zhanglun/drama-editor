@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef } from 'react'
+import { useRef } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { Plus } from 'lucide-react'
 
@@ -9,18 +9,17 @@ interface CustomHandleProps {
   onInteraction?: (params: { mode: 'click' | 'drag'; position: { x: number; y: number } }) => void
 }
 
-function CustomHandleComponent({ type, position, color, onInteraction }: CustomHandleProps) {
-  const [isHovered, setIsHovered] = useState(false)
+export function CustomHandle({ type, position, color, onInteraction }: CustomHandleProps) {
   const mouseDownPos = useRef<{ x: number; y: number } | null>(null)
   const isDragging = useRef(false)
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation()
     mouseDownPos.current = { x: e.clientX, y: e.clientY }
     isDragging.current = false
-  }, [])
+  }
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handleMouseMove = (e: MouseEvent) => {
     if (!mouseDownPos.current) return
 
     const dx = e.clientX - mouseDownPos.current.x
@@ -30,9 +29,9 @@ function CustomHandleComponent({ type, position, color, onInteraction }: CustomH
     if (distance >= 5) {
       isDragging.current = true
     }
-  }, [])
+  }
 
-  const handleMouseUp = useCallback((e: MouseEvent) => {
+  const handleMouseUp = (e: MouseEvent) => {
     if (!mouseDownPos.current) return
 
     const dx = e.clientX - mouseDownPos.current.x
@@ -48,21 +47,19 @@ function CustomHandleComponent({ type, position, color, onInteraction }: CustomH
 
     mouseDownPos.current = null
     isDragging.current = false
-  }, [onInteraction])
+  }
 
-  const handleMouseEnter = useCallback(() => {
-    setIsHovered(true)
+  const handleMouseEnter = () => {
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
-  }, [handleMouseMove, handleMouseUp])
+  }
 
-  const handleMouseLeave = useCallback(() => {
-    setIsHovered(false)
+  const handleMouseLeave = () => {
     if (!mouseDownPos.current) {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [handleMouseMove, handleMouseUp])
+  }
 
   return (
     <Handle
@@ -71,23 +68,13 @@ function CustomHandleComponent({ type, position, color, onInteraction }: CustomH
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
-      className="!w-6 !h-6 !border-2 !border-white !rounded-full !opacity-0 group-hover:!opacity-100 hover:!scale-110 !transition-all !duration-200 !flex !items-center !justify-center"
+      className="!w-6 !h-6 !border-2 !border-white !rounded-full !opacity-0 group-hover:!opacity-100 !flex !items-center !justify-center"
       style={{ 
         backgroundColor: color,
         [position === Position.Right ? 'right' : 'left']: '-12px'
       }}
     >
-      <div
-        className="pointer-events-none"
-        style={{
-          transform: isHovered ? 'rotate(90deg)' : 'rotate(0deg)',
-          transition: 'transform 200ms ease'
-        }}
-      >
-        <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-      </div>
+      <Plus className="w-3.5 h-3.5 text-white pointer-events-none" strokeWidth={2.5} />
     </Handle>
   )
 }
-
-export const CustomHandle = memo(CustomHandleComponent)

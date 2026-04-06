@@ -1,9 +1,8 @@
-import { memo } from 'react'
 import { Position, type NodeProps } from '@xyflow/react'
 import { CustomHandle } from './CustomHandle'
 import type { VariantNodeData } from '../../../shared/types'
 
-function VariantNodeComponent({ data, selected }: NodeProps) {
+export function VariantNode({ data, selected }: NodeProps) {
   const nodeData = data as unknown as VariantNodeData
   const traitEntries = Object.entries(nodeData.traits || {}).slice(0, 3)
   const onHandleInteraction = (nodeData as any).onHandleInteraction
@@ -80,5 +79,3 @@ function VariantNodeComponent({ data, selected }: NodeProps) {
     </div>
   )
 }
-
-export const VariantNode = memo(VariantNodeComponent)

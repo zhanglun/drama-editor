@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Plus, Link2 } from 'lucide-react'
 
@@ -12,7 +12,7 @@ interface HandleMenuProps {
   onClose: () => void
 }
 
-function HandleMenuComponent({ x, y, nodeId, nodeType, mode, onSelect, onClose }: HandleMenuProps) {
+export function HandleMenu({ x, y, nodeId, nodeType, mode, onSelect, onClose }: HandleMenuProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [isEntering, setIsEntering] = useState(false)
 
@@ -89,5 +89,3 @@ function HandleMenuComponent({ x, y, nodeId, nodeType, mode, onSelect, onClose }
     document.body
   )
 }
-
-export const HandleMenu = memo(HandleMenuComponent)

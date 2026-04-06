@@ -1,9 +1,8 @@
-import { memo } from 'react'
 import { Position, type NodeProps } from '@xyflow/react'
 import { CustomHandle } from './CustomHandle'
 import type { CharacterNodeData } from '../../../shared/types'
 
-function CharacterNodeComponent({ data, selected }: NodeProps) {
+export function CharacterNode({ data, selected }: NodeProps) {
   const nodeData = data as unknown as CharacterNodeData
   const onHandleInteraction = (nodeData as any).onHandleInteraction
 
@@ -58,5 +57,3 @@ function CharacterNodeComponent({ data, selected }: NodeProps) {
     </div>
   )
 }
-
-export const CharacterNode = memo(CharacterNodeComponent)

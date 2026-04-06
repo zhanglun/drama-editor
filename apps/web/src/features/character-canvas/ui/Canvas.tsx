@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -96,18 +96,18 @@ function CanvasInner({
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const { screenToFlowPosition } = useReactFlow()
 
-  const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
+  const handleNodeClick = (_: React.MouseEvent, node: Node) => {
     setSelectedNodeId(node.id)
     onNodeSelect?.(node.id, node.type as 'character' | 'variant')
-  }, [onNodeSelect])
+  }
 
-  const handlePaneClick = useCallback(() => {
+  const handlePaneClick = () => {
     setSelectedNodeId(null)
     setContextMenu(null)
     onNodeSelect?.(null, null)
-  }, [onNodeSelect])
+  }
 
-  const handleNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
+  const handleNodeContextMenu = (event: React.MouseEvent, node: Node) => {
     event.preventDefault()
     setContextMenu({
       x: event.clientX,
@@ -115,9 +115,9 @@ function CanvasInner({
       nodeId: node.id,
       nodeType: node.type as 'character' | 'variant',
     })
-  }, [])
+  }
 
-  const handlePaneContextMenu = useCallback((event: React.MouseEvent) => {
+  const handlePaneContextMenu = (event: React.MouseEvent) => {
     event.preventDefault()
     setContextMenu({
       x: event.clientX,
@@ -125,14 +125,11 @@ function CanvasInner({
       nodeId: null,
       nodeType: null,
     })
-  }, [])
+  }
 
-  const handleNodeDragStop = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      updateNodePosition(node.id, { canvas_position: { x: node.position.x, y: node.position.y } } as any)
-    },
-    [updateNodePosition],
-  )
+  const handleNodeDragStop = (_: React.MouseEvent, node: Node) => {
+    updateNodePosition(node.id, { canvas_position: { x: node.position.x, y: node.position.y } } as any)
+  }
 
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
@@ -143,77 +140,64 @@ function CanvasInner({
     [removeNode],
   )
 
-  const handleConnect = useCallback(
-    (connection: Connection) => {
-      if (!connection.source || !connection.target) return
+  const handleConnect = (connection: Connection) => {
+    if (!connection.source || !connection.target) return
 
-      const sourceNode = nodes.find((n) => n.id === connection.source)
-      const targetNode = nodes.find((n) => n.id === connection.target)
-      if (!sourceNode || !targetNode) return
+    const sourceNode = nodes.find((n) => n.id === connection.source)
+    const targetNode = nodes.find((n) => n.id === connection.target)
+    if (!sourceNode || !targetNode) return
 
-      const validation = validateConnection(sourceNode, targetNode, edges)
-      if (!validation.valid) {
-        alert(validation.reason)
-        return
-      }
+    const validation = validateConnection(sourceNode, targetNode, edges)
+    if (!validation.valid) {
+      alert(validation.reason)
+      return
+    }
 
-      const sourceName = (sourceNode.data as Record<string, unknown>).name as string
-      const targetName = (targetNode.data as Record<string, unknown>).name as string
-      if (!confirm(`确定将变体「${targetName}」移动到「${sourceName}」下方？`)) return
+    const sourceName = (sourceNode.data as Record<string, unknown>).name as string
+    const targetName = (targetNode.data as Record<string, unknown>).name as string
+    if (!confirm(`确定将变体「${targetName}」移动到「${sourceName}」下方？`)) return
 
-      onConnectVariant?.(connection.source, connection.target, sourceNode.type as 'character' | 'variant')
+    onConnectVariant?.(connection.source, connection.target, sourceNode.type as 'character' | 'variant')
+  }
+
+  const handleHandleInteraction = (
+    nodeId: string,
+    nodeType: 'character' | 'variant',
+    interaction: { mode: 'click' | 'drag'; position: { x: number; y: number } }
+  ) => {
+    if (!reactFlowWrapper.current) return
+
+    const bounds = reactFlowWrapper.current.getBoundingClientRect()
+    const canvasPosition = screenToFlowPosition({
+      x: interaction.position.x - bounds.left,
+      y: interaction.position.y - bounds.top,
+    })
+
+    setHandleMenu({
+      x: interaction.position.x,
+      y: interaction.position.y,
+      nodeId,
+      nodeType,
+      mode: interaction.mode,
+      canvasPosition,
+    })
+  }
+
+  const handleMenuSelect = (action: string) => {
+    if (action === 'create-variant' && handleMenu) {
+      onAddVariant?.(handleMenu.nodeId, handleMenu.nodeType)
+    }
+    setHandleMenu(null)
+  }
+
+  const nodesWithCallbacks = nodes.map((node) => ({
+    ...node,
+    data: {
+      ...node.data,
+      onHandleInteraction: (interaction: any) =>
+        handleHandleInteraction(node.id, node.type as 'character' | 'variant', interaction),
     },
-    [nodes, edges, onConnectVariant],
-  )
-
-  const handleHandleInteraction = useCallback(
-    (
-      nodeId: string,
-      nodeType: 'character' | 'variant',
-      interaction: { mode: 'click' | 'drag'; position: { x: number; y: number } }
-    ) => {
-      if (!reactFlowWrapper.current) return
-
-      const bounds = reactFlowWrapper.current.getBoundingClientRect()
-      const canvasPosition = screenToFlowPosition({
-        x: interaction.position.x - bounds.left,
-        y: interaction.position.y - bounds.top,
-      })
-
-      setHandleMenu({
-        x: interaction.position.x,
-        y: interaction.position.y,
-        nodeId,
-        nodeType,
-        mode: interaction.mode,
-        canvasPosition,
-      })
-    },
-    [screenToFlowPosition]
-  )
-
-  const handleMenuSelect = useCallback(
-    (action: string) => {
-      if (action === 'create-variant' && handleMenu) {
-        onAddVariant?.(handleMenu.nodeId, handleMenu.nodeType)
-      }
-      setHandleMenu(null)
-    },
-    [handleMenu, onAddVariant]
-  )
-
-  const nodesWithCallbacks = useMemo(
-    () =>
-      nodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          onHandleInteraction: (interaction: any) =>
-            handleHandleInteraction(node.id, node.type as 'character' | 'variant', interaction),
-        },
-      })) as any,
-    [nodes, handleHandleInteraction]
-  )
+  })) as any
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
