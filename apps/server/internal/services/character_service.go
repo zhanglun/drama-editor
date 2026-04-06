@@ -58,6 +58,12 @@ func (s *CharacterService) Update(id string, req models.UpdateCharacterRequest) 
 	if req.AvatarURL != "" {
 		updates["avatar_url"] = req.AvatarURL
 	}
+	if req.Color != "" {
+		updates["color"] = req.Color
+	}
+	if req.CanvasPosition != nil {
+		updates["canvas_position"] = req.CanvasPosition
+	}
 
 	if err := database.GetDB().Model(&character).Updates(updates).Error; err != nil {
 		return nil, err

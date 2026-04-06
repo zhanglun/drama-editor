@@ -10,26 +10,30 @@ import (
 )
 
 type Script struct {
-	ID          string        `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	Title       string        `gorm:"type:varchar(255);not null" json:"title"`
-	Description string        `gorm:"type:text" json:"description,omitempty"`
-	Content     ScriptContent `gorm:"type:jsonb" json:"content,omitempty"`
-	CreatedAt   time.Time     `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt   time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
+	ID          string         `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
+	Title       string         `gorm:"type:varchar(255);not null" json:"title"`
+	Description string         `gorm:"type:text" json:"description,omitempty"`
+	Content     ScriptContent  `gorm:"type:jsonb" json:"content,omitempty"`
+	CanvasState JSONBMap       `gorm:"type:jsonb" json:"canvas_state,omitempty"`
+	CreatedAt   time.Time      `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt   time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
-	Author     string        `gorm:"type:varchar(255)" json:"author,omitempty"`
-	Genre     string        `gorm:"type:varchar(100)" json:"genre,omitempty"`
-	Logline   string        `gorm:"type:text" json:"logline,omitempty"`
-	Notes     string        `gorm:"type:text" json:"notes,omitempty"`
+	Author      string         `gorm:"type:varchar(255)" json:"author,omitempty"`
+	Genre       string         `gorm:"type:varchar(100)" json:"genre,omitempty"`
+	Logline     string         `gorm:"type:text" json:"logline,omitempty"`
+	Notes       string         `gorm:"type:text" json:"notes,omitempty"`
 }
 
 type Character struct {
-	ID          string    `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
-	ScriptID    string    `gorm:"type:uuid;not null;index" json:"script_id"`
-	Name        string    `gorm:"type:varchar(255);not null" json:"name"`
-	Description string    `gorm:"type:text" json:"description,omitempty"`
-	AvatarURL   string    `gorm:"type:text" json:"avatar_url,omitempty"`
-	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
+	ID             string    `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
+	ScriptID       string    `gorm:"type:uuid;not null;index" json:"script_id"`
+	Name           string    `gorm:"type:varchar(255);not null" json:"name"`
+	Description    string    `gorm:"type:text" json:"description,omitempty"`
+	AvatarURL      string    `gorm:"type:text" json:"avatar_url,omitempty"`
+	Traits         JSONBMap  `gorm:"type:jsonb;default:'{}'" json:"traits,omitempty"`
+	Color          string    `gorm:"type:varchar(7);default:'#6366f1'" json:"color,omitempty"`
+	CanvasPosition JSONBMap  `gorm:"type:jsonb;default:'{\"x\": 0, \"y\": 0}'" json:"canvas_position,omitempty"`
+	CreatedAt      time.Time `gorm:"autoCreateTime" json:"created_at"`
 }
 
 type ScriptVersion struct {
@@ -42,14 +46,14 @@ type ScriptVersion struct {
 }
 
 type ScriptContent struct {
-	Type    string        `json:"type"`
+	Type    string       `json:"type"`
 	Content []ScriptNode `json:"content"`
 }
 
 type ScriptNode struct {
-	Type    string        `json:"type"`
-	Content []ScriptNode  `json:"content,omitempty"`
-	Text    string        `json:"text,omitempty"`
+	Type    string         `json:"type"`
+	Content []ScriptNode   `json:"content,omitempty"`
+	Text    string         `json:"text,omitempty"`
 	Attrs   map[string]any `json:"attrs,omitempty"`
 }
 
@@ -75,10 +79,10 @@ type UpdateScriptRequest struct {
 	Title       string        `json:"title"`
 	Description string        `json:"description"`
 	Content     ScriptContent `json:"content"`
-	Author     string        `json:"author"`
-	Genre      string        `json:"genre"`
-	Logline   string        `json:"logline"`
-	Notes     string        `json:"notes"`
+	Author      string        `json:"author"`
+	Genre       string        `json:"genre"`
+	Logline     string        `json:"logline"`
+	Notes       string        `json:"notes"`
 }
 
 type CreateCharacterRequest struct {
@@ -88,12 +92,14 @@ type CreateCharacterRequest struct {
 }
 
 type UpdateCharacterRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	AvatarURL   string `json:"avatar_url"`
+	Name           string   `json:"name"`
+	Description    string   `json:"description"`
+	AvatarURL      string   `json:"avatar_url"`
+	Color          string   `json:"color"`
+	CanvasPosition JSONBMap `json:"canvas_position"`
 }
 
 type CreateVersionRequest struct {
-	Content      ScriptContent `json:"content" binding:"required"`
+	Content       ScriptContent `json:"content" binding:"required"`
 	ChangeSummary string        `json:"change_summary"`
 }

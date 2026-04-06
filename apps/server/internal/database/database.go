@@ -49,6 +49,8 @@ func Migrate() error {
 		&models.Script{},
 		&models.Character{},
 		&models.ScriptVersion{},
+		&models.CharacterVariant{},
+		&models.VariantScene{},
 	)
 	if err != nil {
 		return err
