@@ -11,12 +11,9 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import ListItem from '@tiptap/extension-list-item'
 import { useEffect, useState, useRef } from 'react'
 import { Save } from 'lucide-react'
-import { Scene, Dialogue, Action, Transition, SlashCommand } from '../../extensions'
+import { Scene, Dialogue, Action, Transition, SlashCommand, CharacterMention, CharacterMentionNode } from '../../extensions'
 import { extractCharacters } from '../../utils/characterExtractor'
-import type { ScriptContent } from '../../types'
-import CharacterMention from '../../extensions/CharacterMention'
-
-import CharacterMentionNode from '../../extensions/CharacterMentionNode'
+import { useScriptStore } from '../../stores/scriptStore'
 
 type LineNumbersMode = 'line' | 'scene'
 
@@ -28,6 +25,8 @@ export function ScriptEditor({
   placeholder = '开始编写你的剧本...',
   onSaveVersion,
 }: ScriptEditorProps) {
+  const { currentScript } = useScriptStore()
+  const characters = currentScript?.content?.characters || []
   const [lineNumbersMode, setLineNumbersMode] = useState<LineNumbersMode>('line')
   const [lineHeights, setLineHeights] = useState<{ number: number; type: 'line' | 'scene'; pos: number; height: number }[]>([])
   const lineNumbersRef = useRef<HTMLDivElement>(null)
@@ -61,11 +60,29 @@ export function ScriptEditor({
       Action,
       Transition,
       SlashCommand,
+      CharacterMention.configure({ characters }),
+      CharacterMentionNode,
     ],
     content: content || { type: 'doc', content: [] },
     onUpdate: ({ editor }) => {
       const json = editor.getJSON()
       const characters = extractCharacters(json)
+      
+      if (process.env.NODE_ENV === 'development') {
+        const mentionNodes: any[] = []
+        json.content?.forEach((node: any) => {
+          if (node.content) {
+            node.content.forEach((child: any) => {
+              if (child.type === 'characterMention' || child.marks?.some((m: any) => m.type === 'characterMention')) {
+                mentionNodes.push(child)
+              }
+            })
+          }
+        })
+        if (mentionNodes.length > 0) {
+          console.log('🔍 CharacterMention nodes in JSON:', mentionNodes)
+        }
+      }
       
       if (onChange) {
         onChange({

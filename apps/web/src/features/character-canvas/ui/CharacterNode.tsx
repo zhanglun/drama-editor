@@ -1,19 +1,27 @@
 import { memo } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Position, type NodeProps } from '@xyflow/react'
+import { CustomHandle } from './CustomHandle'
 import type { CharacterNodeData } from '../../../shared/types'
-import { User } from 'lucide-react'
 
 function CharacterNodeComponent({ data, selected }: NodeProps) {
-  const nodeData = data as CharacterNodeData
+  const nodeData = data as unknown as CharacterNodeData
+  const onHandleInteraction = (nodeData as any).onHandleInteraction
 
   return (
     <div
       className={`
-        relative rounded-lg border-2 bg-white shadow-sm min-w-[160px] transition-shadow
+        group relative rounded-lg border-2 bg-white shadow-sm min-w-[160px] transition-shadow
         ${selected ? 'shadow-md border-indigo-400' : 'border-gray-200 hover:shadow-md'}
       `}
     >
-      <Handle type="source" position={Position.Bottom} className="!bg-indigo-400 !w-2 !h-2" />
+      <CustomHandle
+        type="source"
+        position={Position.Right}
+        color={nodeData.color || '#6366f1'}
+        onInteraction={(interaction) => {
+          onHandleInteraction?.(interaction)
+        }}
+      />
 
       <div
         className="h-1.5 rounded-t-md"

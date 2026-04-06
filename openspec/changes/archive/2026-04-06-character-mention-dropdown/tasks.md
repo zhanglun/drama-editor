@@ -25,10 +25,10 @@
 
 ## 2. 修改 CharacterMention 扩展
 
-- [ ] 2.1 更新 `CharacterMention.ts` 中的 command 方法，使用自定义节点替代纯文本
-- [ ] 2.2 修改 insertContent 从 `type: 'text'` 改为 `type: 'characterMention'`
-- [ ] 2.3 确保 mention 节点插入时包含正确的 id 和 label 属性
-- [ ] 2.4 确保插入后光标位置正确（在 mention 节点之后）
+- [x] 2.1 更新 `CharacterMention.ts` 中的 command 方法，使用自定义节点替代纯文本
+- [x] 2.2 修改 insertContent 从 `type: 'text'` 改为 `type: 'characterMention'`
+- [x] 2.3 确保 mention 节点插入时包含正确的 id 和 label 属性
+- [x] 2.4 确保插入后光标位置正确（在 mention 节点之后）
 
 ## 3. 更新样式定义
 

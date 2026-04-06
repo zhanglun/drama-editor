@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface MentionItem {
   id: string
@@ -13,6 +13,7 @@ interface MentionListProps {
 export function MentionList({ items, command }: MentionListProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [query, setQuery] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const filteredItems = items.filter(item =>
     item.label.toLowerCase().includes(query.toLowerCase())
@@ -27,41 +28,21 @@ export function MentionList({ items, command }: MentionListProps) {
 
   useEffect(() => {
     setSelectedIndex(0)
-  }, [query])
+  }, [filteredItems.length])
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : filteredItems.length - 1
-        )
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        setSelectedIndex(prev => 
-          prev < filteredItems.length - 1 ? prev + 1 : 0
-        )
-      } else if (e.key === 'Enter') {
-        e.preventDefault()
-        selectItem(selectedIndex)
-      } else if (e.key === 'Escape') {
-        e.preventDefault()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [filteredItems.length, selectedIndex, selectItem])
+    inputRef.current?.focus()
+  }, [])
 
   return (
     <div className="mention-menu">
       <input
+        ref={inputRef}
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="搜索角色..."
         className="mention-menu-input"
-        autoFocus
       />
       <div className="mention-menu-list">
         {filteredItems.length === 0 ? (

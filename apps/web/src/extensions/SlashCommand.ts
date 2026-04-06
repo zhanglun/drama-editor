@@ -3,6 +3,7 @@ import { ReactRenderer } from '@tiptap/react'
 import Suggestion from '@tiptap/suggestion'
 import tippy, { Instance } from 'tippy.js'
 import { SlashMenu } from './SlashMenu'
+import { PluginKey } from '@tiptap/pm/state'
 import 'tippy.js/dist/tippy.css'
 
 export interface SlashMenuItem {
@@ -39,6 +40,7 @@ export const SlashCommand = Extension.create({
     return [
       Suggestion({
         editor: this.editor,
+        pluginKey: new PluginKey('slashCommand'),
         char: '/',
         command: ({ editor, range, props }) => {
           props.command({ editor, range })

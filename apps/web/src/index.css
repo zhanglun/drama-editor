@@ -428,6 +428,39 @@ body {
   .tiptap pre {
     background-color: #111827;
   }
+
+  .dialogue-block {
+    background-color: #2e1065;
+    border-left-color: #a855f7;
+  }
+
+  .dialogue-block::before {
+    color: #c4b5fd;
+  }
+
+  .dialogue-block[data-character]::after {
+    color: #9ca3af;
+  }
+
+  .action-description {
+    background-color: #14532d;
+    border-left-color: #22c55e;
+    color: #d1d5db;
+  }
+
+  .action-description::before {
+    color: #86efac;
+  }
+
+  .transition-element {
+    background-color: #450a0a;
+    border-right-color: #ef4444;
+    color: #fca5a5;
+  }
+
+  .transition-element::before {
+    color: #fca5a5;
+  }
 }
 
 /* Scene heading style */
@@ -445,4 +478,78 @@ body {
 .scene-heading::before {
   content: '🎬 ';
   font-size: 1.1em;
+}
+
+.dialogue-block {
+  max-width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: #faf5ff;
+  border-left: 4px solid #a855f7;
+  border-radius: 4px;
+  position: relative;
+}
+
+.dialogue-block::before {
+  content: '💬 对白';
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #7c3aed;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.action-description {
+  width: 100%;
+  font-style: italic;
+  color: #4b5563;
+  background-color: #f0fdf4;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  border-left: 4px solid #22c55e;
+  border-radius: 4px;
+  position: relative;
+}
+
+.action-description::before {
+  content: '🎭 动作';
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #16a34a;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-style: normal;
+}
+
+.transition-element {
+  width: 100%;
+  text-align: right;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #dc2626;
+  letter-spacing: 0.1em;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  background-color: #fef2f2;
+  border-right: 4px solid #ef4444;
+  border-radius: 4px;
+  position: relative;
+}
+
+.transition-element::before {
+  content: '🔄 转场';
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b91c1c;
+  margin-bottom: 0.5rem;
+  text-align: left;
+  letter-spacing: 0.05em;
 }

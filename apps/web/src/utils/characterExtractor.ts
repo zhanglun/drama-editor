@@ -11,6 +11,10 @@ export function extractCharacters(content: ScriptContent): string[] {
         characters.add(node.attrs.character as string)
       }
 
+      if (node.type === 'characterMention' && node.attrs?.label) {
+        characters.add(node.attrs.label as string)
+      }
+
       if (node.content) {
         traverseNodes(node.content)
       }

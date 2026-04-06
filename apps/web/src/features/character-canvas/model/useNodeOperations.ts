@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useCanvasStore } from './store'
-import type { CharacterNodeData, VariantNodeData, CreateVariantRequest } from '../../../shared/types'
-import { createVariant, deleteVariant, updateVariant } from '../api'
+import type { CharacterNodeData, VariantNodeData, CreateVariantRequest, CreateCharacterRequest } from '../../../shared/types'
+import { createVariant, deleteVariant, updateVariant, createCharacter, updateCharacter } from '../api'
 import type { Node } from '@xyflow/react'
 
 type CanvasNode = Node<CharacterNodeData> | Node<VariantNodeData>
@@ -10,23 +10,55 @@ export function useNodeOperations(scriptId: string | null) {
   const { addNode, removeNode, updateNodeData, addEdge, removeEdge, setNodes } = useCanvasStore()
 
   const addCharacterNode = useCallback(
-    (characterId: string, name: string, avatarUrl: string | null, color: string) => {
+    async (data: CreateCharacterRequest) => {
+      if (!scriptId) return
+
+      const res = await createCharacter(scriptId, data)
+      if (res.error || !res.data) throw new Error(res.error || 'Failed to create character')
+
+      const character = res.data
       const node: Node<CharacterNodeData> = {
-        id: characterId,
+        id: character.id,
         type: 'character',
         position: { x: Math.random() * 400, y: Math.random() * 400 },
         data: {
           type: 'character',
-          characterId,
-          name,
-          avatarUrl,
-          color,
+          characterId: character.id,
+          name: character.name,
+          description: character.description || '',
+          avatarUrl: character.avatar_url,
+          color: character.color || '#6366f1',
+          traits: character.traits || {},
           variantCount: 0,
         },
       }
       addNode(node)
+
+      return character
     },
-    [addNode],
+    [scriptId, addNode],
+  )
+
+  const updateCharacterNode = useCallback(
+    async (
+      characterId: string,
+      data: { name?: string; description?: string; avatar_url?: string; color?: string; traits?: Record<string, unknown> },
+    ) => {
+      if (!scriptId) return
+
+      const res = await updateCharacter(scriptId, characterId, data)
+      if (res.error) throw new Error(res.error)
+
+      const updateData: Partial<CharacterNodeData> = {}
+      if (data.name !== undefined) updateData.name = data.name
+      if (data.description !== undefined) updateData.description = data.description
+      if (data.avatar_url !== undefined) updateData.avatarUrl = data.avatar_url
+      if (data.color !== undefined) updateData.color = data.color
+      if (data.traits !== undefined) updateData.traits = data.traits
+
+      updateNodeData(characterId, updateData)
+    },
+    [scriptId, updateNodeData],
   )
 
   const addVariantNode = useCallback(
@@ -60,7 +92,7 @@ export function useNodeOperations(scriptId: string | null) {
         id: `edge-${variant.id}-${sourceId}`,
         source: sourceId,
         target: variant.id,
-        type: 'smoothstep',
+        type: 'bezier',
       })
 
       setNodes((nodes) =>
@@ -133,6 +165,7 @@ export function useNodeOperations(scriptId: string | null) {
 
   return {
     addCharacterNode,
+    updateCharacterNode,
     addVariantNode,
     removeVariantNode,
     updateVariantNode,

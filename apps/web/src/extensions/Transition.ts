@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import { TransitionNodeView } from '../components/Editor/nodeviews/TransitionNodeView'
 
 export interface TransitionOptions {
   HTMLAttributes: Record<string, unknown>,
@@ -40,6 +42,10 @@ export const Transition = Node.create<TransitionOptions>({
       }),
       0,
     ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(TransitionNodeView)
   },
 
   addCommands() {

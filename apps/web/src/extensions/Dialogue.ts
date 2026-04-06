@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import { DialogueNodeView } from '../components/Editor/nodeviews/DialogueNodeView'
 
 export interface DialogueOptions {
   HTMLAttributes: Record<string, unknown>,
@@ -69,6 +71,10 @@ export const Dialogue = Node.create<DialogueOptions>({
       }),
       0,
     ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(DialogueNodeView)
   },
 
   addCommands() {

@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import { SceneNodeView } from '../components/Editor/nodeviews/SceneNodeView'
 
 export interface SceneOptions {
   HTMLAttributes: Record<string, unknown>,
@@ -40,6 +42,10 @@ export const Scene = Node.create<SceneOptions>({
       }),
       0,
     ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(SceneNodeView)
   },
 
   addCommands() {

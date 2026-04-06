@@ -1,20 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   BackgroundVariant,
   MiniMap,
   Controls,
-  type OnNodeDrag,
-  type NodeMouseHandler,
+  ConnectionMode,
+  MarkerType,
+  type Connection,
+  useReactFlow,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useCanvasStore } from '../model/store'
 import { useCanvasSync } from '../model/useCanvasSync'
+import { validateConnection } from '../model/connectionValidation'
 import { CharacterNode } from './CharacterNode'
 import { VariantNode } from './VariantNode'
 import { CanvasToolbar } from './CanvasToolbar'
 import { CanvasContextMenu } from './CanvasContextMenu'
+import { HandleMenu } from './HandleMenu'
 import type { Node } from '@xyflow/react'
 
 const nodeTypes = {
@@ -22,11 +27,32 @@ const nodeTypes = {
   variant: VariantNode,
 }
 
+const defaultEdgeOptions = {
+  type: 'bezier',
+  animated: false,
+  style: { 
+    strokeWidth: 2, 
+    stroke: '#94a3b8',
+    fill: 'none',
+  },
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    width: 20,
+    height: 20,
+    color: '#94a3b8',
+  },
+  pathOptions: {
+    curvature: 0.25,
+  },
+}
+
 interface CanvasProps {
   scriptId: string | null
   onEditVariant?: (variantId: string) => void
   onAddVariant?: (parentId: string, parentType: 'character' | 'variant') => void
   onNodeSelect?: (nodeId: string | null, nodeType: 'character' | 'variant' | null) => void
+  onConnectVariant?: (sourceId: string, targetId: string, sourceType: 'character' | 'variant') => void
+  onCreateCharacter?: () => void
 }
 
 interface ContextMenuState {
@@ -36,7 +62,23 @@ interface ContextMenuState {
   nodeType: 'character' | 'variant' | null
 }
 
-export function Canvas({ scriptId, onEditVariant, onAddVariant, onNodeSelect }: CanvasProps) {
+interface HandleMenuState {
+  x: number
+  y: number
+  nodeId: string
+  nodeType: 'character' | 'variant'
+  mode: 'click' | 'drag'
+  canvasPosition: { x: number; y: number }
+}
+
+function CanvasInner({
+  scriptId,
+  onEditVariant,
+  onAddVariant,
+  onNodeSelect,
+  onConnectVariant,
+  onCreateCharacter,
+}: CanvasProps) {
   const nodes = useCanvasStore((s) => s.nodes)
   const edges = useCanvasStore((s) => s.edges)
   const loading = useCanvasStore((s) => s.loading)
@@ -50,7 +92,9 @@ export function Canvas({ scriptId, onEditVariant, onAddVariant, onNodeSelect }: 
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const [handleMenu, setHandleMenu] = useState<HandleMenuState | null>(null)
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
+  const { screenToFlowPosition } = useReactFlow()
 
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNodeId(node.id)
@@ -75,7 +119,12 @@ export function Canvas({ scriptId, onEditVariant, onAddVariant, onNodeSelect }: 
 
   const handlePaneContextMenu = useCallback((event: React.MouseEvent) => {
     event.preventDefault()
-    setContextMenu(null)
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      nodeId: null,
+      nodeType: null,
+    })
   }, [])
 
   const handleNodeDragStop = useCallback(
@@ -92,6 +141,78 @@ export function Canvas({ scriptId, onEditVariant, onAddVariant, onNodeSelect }: 
       }
     },
     [removeNode],
+  )
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return
+
+      const sourceNode = nodes.find((n) => n.id === connection.source)
+      const targetNode = nodes.find((n) => n.id === connection.target)
+      if (!sourceNode || !targetNode) return
+
+      const validation = validateConnection(sourceNode, targetNode, edges)
+      if (!validation.valid) {
+        alert(validation.reason)
+        return
+      }
+
+      const sourceName = (sourceNode.data as Record<string, unknown>).name as string
+      const targetName = (targetNode.data as Record<string, unknown>).name as string
+      if (!confirm(`确定将变体「${targetName}」移动到「${sourceName}」下方？`)) return
+
+      onConnectVariant?.(connection.source, connection.target, sourceNode.type as 'character' | 'variant')
+    },
+    [nodes, edges, onConnectVariant],
+  )
+
+  const handleHandleInteraction = useCallback(
+    (
+      nodeId: string,
+      nodeType: 'character' | 'variant',
+      interaction: { mode: 'click' | 'drag'; position: { x: number; y: number } }
+    ) => {
+      if (!reactFlowWrapper.current) return
+
+      const bounds = reactFlowWrapper.current.getBoundingClientRect()
+      const canvasPosition = screenToFlowPosition({
+        x: interaction.position.x - bounds.left,
+        y: interaction.position.y - bounds.top,
+      })
+
+      setHandleMenu({
+        x: interaction.position.x,
+        y: interaction.position.y,
+        nodeId,
+        nodeType,
+        mode: interaction.mode,
+        canvasPosition,
+      })
+    },
+    [screenToFlowPosition]
+  )
+
+  const handleMenuSelect = useCallback(
+    (action: string) => {
+      if (action === 'create-variant' && handleMenu) {
+        onAddVariant?.(handleMenu.nodeId, handleMenu.nodeType)
+      }
+      setHandleMenu(null)
+    },
+    [handleMenu, onAddVariant]
+  )
+
+  const nodesWithCallbacks = useMemo(
+    () =>
+      nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onHandleInteraction: (interaction: any) =>
+            handleHandleInteraction(node.id, node.type as 'character' | 'variant', interaction),
+        },
+      })) as any,
+    [nodes, handleHandleInteraction]
   )
 
   useEffect(() => {
@@ -132,7 +253,7 @@ export function Canvas({ scriptId, onEditVariant, onAddVariant, onNodeSelect }: 
   return (
     <div className="h-full w-full relative" ref={reactFlowWrapper}>
       <ReactFlow
-        nodes={nodes}
+        nodes={nodesWithCallbacks}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -141,7 +262,10 @@ export function Canvas({ scriptId, onEditVariant, onAddVariant, onNodeSelect }: 
         onNodeContextMenu={handleNodeContextMenu}
         onPaneContextMenu={handlePaneContextMenu}
         onNodeDragStop={handleNodeDragStop}
+        onConnect={handleConnect}
         nodeTypes={nodeTypes}
+        connectionMode={ConnectionMode.Loose}
+        defaultEdgeOptions={defaultEdgeOptions}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
@@ -188,9 +312,33 @@ export function Canvas({ scriptId, onEditVariant, onAddVariant, onNodeSelect }: 
             if (contextMenu.nodeId) onAddVariant?.(contextMenu.nodeId, contextMenu.nodeType || 'variant')
             setContextMenu(null)
           }}
+          onCreateCharacter={() => {
+            onCreateCharacter?.()
+            setContextMenu(null)
+          }}
           onClose={() => setContextMenu(null)}
         />
       )}
+
+      {handleMenu && (
+        <HandleMenu
+          x={handleMenu.x}
+          y={handleMenu.y}
+          nodeId={handleMenu.nodeId}
+          nodeType={handleMenu.nodeType}
+          mode={handleMenu.mode}
+          onSelect={handleMenuSelect}
+          onClose={() => setHandleMenu(null)}
+        />
+      )}
     </div>
+  )
+}
+
+export function Canvas(props: CanvasProps) {
+  return (
+    <ReactFlowProvider>
+      <CanvasInner {...props} />
+    </ReactFlowProvider>
   )
 }

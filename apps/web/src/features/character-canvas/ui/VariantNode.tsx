@@ -1,20 +1,36 @@
 import { memo } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Position, type NodeProps } from '@xyflow/react'
+import { CustomHandle } from './CustomHandle'
 import type { VariantNodeData } from '../../../shared/types'
 
 function VariantNodeComponent({ data, selected }: NodeProps) {
-  const nodeData = data as VariantNodeData
+  const nodeData = data as unknown as VariantNodeData
   const traitEntries = Object.entries(nodeData.traits || {}).slice(0, 3)
+  const onHandleInteraction = (nodeData as any).onHandleInteraction
 
   return (
     <div
       className={`
-        relative rounded-lg border-2 bg-white shadow-sm min-w-[150px] transition-shadow
+        group relative rounded-lg border-2 bg-white shadow-sm min-w-[150px] transition-shadow
         ${selected ? 'shadow-md border-emerald-400' : 'border-gray-200 hover:shadow-md'}
       `}
     >
-      <Handle type="target" position={Position.Top} className="!bg-emerald-400 !w-2 !h-2" />
-      <Handle type="source" position={Position.Bottom} className="!bg-emerald-400 !w-2 !h-2" />
+      <CustomHandle
+        type="target"
+        position={Position.Left}
+        color={nodeData.color || '#10b981'}
+        onInteraction={(interaction) => {
+          onHandleInteraction?.(interaction)
+        }}
+      />
+      <CustomHandle
+        type="source"
+        position={Position.Right}
+        color={nodeData.color || '#10b981'}
+        onInteraction={(interaction) => {
+          onHandleInteraction?.(interaction)
+        }}
+      />
 
       <div
         className="h-1 rounded-t-md"

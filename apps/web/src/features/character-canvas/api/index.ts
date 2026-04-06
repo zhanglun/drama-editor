@@ -13,3 +13,8 @@ export {
   getCanvasState,
   saveCanvasState,
 } from './canvas'
+
+export {
+  createCharacter,
+  updateCharacter,
+} from './characters'

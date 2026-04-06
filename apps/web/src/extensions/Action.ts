@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import { ActionNodeView } from '../components/Editor/nodeviews/ActionNodeView'
 
 export interface ActionOptions {
   HTMLAttributes: Record<string, unknown>,
@@ -40,6 +42,10 @@ export const Action = Node.create<ActionOptions>({
       }),
       0,
     ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ActionNodeView)
   },
 
   addCommands() {

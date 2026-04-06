@@ -77,8 +77,10 @@ function buildCanvasNodes(
         type: 'character',
         characterId: char.id,
         name: char.name,
+        description: char.description || '',
         avatarUrl: char.avatar_url,
         color: char.color || '#6366f1',
+        traits: char.traits || {},
         variantCount: variantCountMap.get(char.id) || 0,
       },
     })
@@ -108,14 +110,14 @@ function buildCanvasNodes(
         id: `edge-${v.id}-parent`,
         source: v.parent_variant_id,
         target: v.id,
-        type: 'smoothstep',
+        type: 'bezier',
       })
     } else {
       edges.push({
         id: `edge-${v.id}-char`,
         source: v.character_id,
         target: v.id,
-        type: 'smoothstep',
+        type: 'bezier',
       })
     }
   }

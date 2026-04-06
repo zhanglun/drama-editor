@@ -48,6 +48,7 @@ export interface UpdateVariantRequest {
   traits?: Record<string, unknown>
   color?: string
   canvas_position?: { x: number; y: number }
+  parent_variant_id?: string | null
 }
 
 export interface VariantResponse extends CharacterVariant {
@@ -55,12 +56,30 @@ export interface VariantResponse extends CharacterVariant {
   child_count?: number
 }
 
+export interface CreateCharacterRequest {
+  name: string
+  description?: string
+  avatar_url?: string
+  color?: string
+}
+
+export interface UpdateCharacterRequest {
+  name?: string
+  description?: string
+  avatar_url?: string
+  color?: string
+  traits?: Record<string, unknown>
+  canvas_position?: { x: number; y: number }
+}
+
 export interface CharacterNodeData {
   type: 'character'
   characterId: string
   name: string
+  description: string
   avatarUrl: string | null
   color: string
+  traits: Record<string, unknown>
   variantCount: number
 }
 
