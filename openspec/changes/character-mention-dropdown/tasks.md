@@ -21,7 +21,7 @@
 - [x] 1.2 定义 `characterMention` 节点 schema（group: inline, atom: true, attrs: id/label）
 - [x] 1.3 实现 `parseHTML` 方法解析 `<span data-character-mention>` 标签
 - [x] 1.4 实现 `renderHTML` 方法渲染带样式的 span 元素（包含 @ 前缀）
-- [ ] 1.5 在 `apps/web/src/extensions/index.ts` 中导出 CharacterMentionNode
+- [x] 1.5 在 `apps/web/src/extensions/index.ts` 中导出 CharacterMentionNode
 
 ## 2. 修改 CharacterMention 扩展
 
@@ -32,35 +32,35 @@
 
 ## 3. 更新样式定义
 
-- [ ] 3.1 在 `apps/web/src/index.css` 中添加 `.character-mention` 样式类
-- [ ] 3.2 设置圆角为 6px（`border-radius: 6px`）
-- [ ] 3.3 设置背景色为浅蓝色（`background-color: #E0F2FE`）
-- [ ] 3.4 添加其他样式（padding, color, font-weight, user-select）
-- [ ] 3.5 确保 mention 在编辑器中正确显示（inline-flex, contenteditable: false）
+- [x] 3.1 在 `apps/web/src/index.css` 中添加 `.character-mention` 样式类
+- [x] 3.2 设置圆角为 6px（`border-radius: 6px`）
+- [x] 3.3 设置背景色为浅蓝色（`background-color: #E0F2FE`）
+- [x] 3.4 添加其他样式（padding, color, font-weight, user-select）
+- [x] 3.5 确保 mention 在编辑器中正确显示（inline-flex, contenteditable: false）
 
 ## 4. 集成到 ScriptEditor
 
-- [ ] 4.1 在 `ScriptEditor.tsx` 中导入 CharacterMention 扩展
-- [ ] 4.2 在 useEditor 的 extensions 数组中添加 CharacterMention.configure()
-- [ ] 4.3 从 scriptStore 获取当前剧本的 characters 列表
-- [ ] 4.4 将 characters 数组传递给 CharacterMention.configure({ characters })
-- [ ] 4.5 添加 useEffect 监听 characters 变化，动态更新扩展配置
+- [x] 4.1 在 `ScriptEditor.tsx` 中导入 CharacterMention 扩展
+- [x] 4.2 在 useEditor 的 extensions 数组中添加 CharacterMention.configure()
+- [x] 4.3 从 scriptStore 获取当前剧本的 characters 列表
+- [x] 4.4 将 characters 数组传递给 CharacterMention.configure({ characters })
+- [x] 4.5 添加 useEffect 监听 characters 变化，动态更新扩展配置
 
 ## 5. 测试与验证
 
-- [ ] 5.1 测试 @ 触发下拉菜单是否正常显示
-- [ ] 5.2 测试搜索过滤功能（输入部分角色名）
-- [ ] 5.3 测试鼠标点击选择角色
-- [ ] 5.4 测试键盘导航（↑↓ 和 Enter）
-- [ ] 5.5 验证插入的 mention 节点样式（圆角 6px、背景色）
-- [ ] 5.6 验证 mention 节点的不可编辑性（Backspace 删除整个节点）
-- [ ] 5.7 测试动态角色列表更新（添加/删除角色后 @ 菜单是否更新）
-- [ ] 5.8 测试空角色列表的边界情况
-- [ ] 5.9 验证编辑器 JSON 输出包含正确的 characterMention 节点结构
-- [ ] 5.10 测试保存和加载包含 mention 的剧本内容
+- [x] 5.1 测试 @ 触发下拉菜单是否正常显示
+- [x] 5.2 测试搜索过滤功能（输入部分角色名）
+- [x] 5.3 测试鼠标点击选择角色
+- [x] 5.4 测试键盘导航（↑↓ 和 Enter）
+- [x] 5.5 验证插入的 mention 节点样式（圆角 6px、背景色）
+- [x] 5.6 验证 mention 节点的不可编辑性（Backspace 删除整个节点）
+- [x] 5.7 测试动态角色列表更新（添加/删除角色后 @ 菜单是否更新）
+- [x] 5.8 测试空角色列表的边界情况
+- [x] 5.9 验证编辑器 JSON 输出包含正确的 characterMention 节点结构
+- [x] 5.10 测试保存和加载包含 mention 的剧本内容
 
 ## 6. 文档与清理
 
-- [ ] 6.1 更新 README.md 中的功能列表（如需要）
-- [ ] 6.2 确保代码注释清晰说明关键逻辑
-- [ ] 6.3 检查是否有重复或未使用的代码（如 CharacterList.tsx）
+- [x] 6.1 更新 README.md 中的功能列表（如需要）
+- [x] 6.2 确保代码注释清晰说明关键逻辑
+- [x] 6.3 检查是否有重复或未使用的代码（如 CharacterList.tsx）
