@@ -53,7 +53,7 @@
 
 ## 2. 创建共享组件和 hooks
 
-- [ ] 2.1 创建共享UI组件库
+- [x] 2.1 创建共享UI组件库
   - 创建 `shared/ui/Card/Card.tsx` - 统一卡片样式 (15个文件有重复 card className)
   - 创建 `shared/ui/Badge/Badge.tsx` - 统一徽章样式
   - 创建 `shared/ui/Loading/LoadingSpinner.tsx` - 统一加载 spinner (10+文件重复)
@@ -61,18 +61,18 @@
   - 更新 `shared/ui/index.ts` 导出文件
   - 使用 `clsx` 和 `tailwind-merge` (`cn` 工具函数) 组合 className
 
-- [ ] 2.2 创建自定义hooks
+- [x] 2.2 创建自定义hooks
   - 创建 `shared/hooks/useAsyncOperation.ts` - 通用异步操作模式
   - 创建 `shared/hooks/useDialog.ts` - 对话框状态管理 (CharacterCanvasPage 等使用)
   - 创建 `shared/hooks/useRelativeDate.ts` - 相对日期格式化 (10个文件有日期格式化需求)
   - 更新 `shared/hooks/index.ts` 导出文件
 
-- [ ] 2.3 创建 Store 异步 action 工厂
+- [x] 2.3 创建 Store 异步 action 工厂
   - 创建 `shared/lib/create-async-action.ts` - Zustand 异步 action 工厂函数
   - 自动处理 `set({ isLoading: true, error: null })` → try → catch 模式
   - 支持泛型，类型安全
 
-- [ ] 2.4 创建 BaseNodeView 组件
+- [x] 2.4 创建 BaseNodeView 组件
   - 创建 `components/Editor/nodeviews/BaseNodeView.tsx`
   - 提取4个 NodeView 的共同结构：
     - NodeViewWrapper → div with gradient background

@@ -1,3 +1,4 @@
+export { BaseNodeView } from './BaseNodeView'
 export { SceneNodeView } from './SceneNodeView'
 export { DialogueNodeView } from './DialogueNodeView'
 export { ActionNodeView } from './ActionNodeView'
