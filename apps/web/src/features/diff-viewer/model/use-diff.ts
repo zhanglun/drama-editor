@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   computeDiff,
   countDiffs,
@@ -32,14 +32,9 @@ export function useDiff({
   const [mode, setMode] = useState<DiffMode>(initialMode)
   const [currentDiffIndex, setCurrentDiffIndex] = useState(0)
 
-  const lines = useMemo(
-    () => computeDiff(oldText, newText, mode),
-    [oldText, newText, mode]
-  )
-
-  const stats = useMemo(() => countDiffs(lines), [lines])
-
-  const diffIndices = useMemo(() => findDiffIndices(lines), [lines])
+  const lines = computeDiff(oldText, newText, mode)
+  const stats = countDiffs(lines)
+  const diffIndices = findDiffIndices(lines)
 
   const nextDiff = () => {
     if (diffIndices.length === 0) return

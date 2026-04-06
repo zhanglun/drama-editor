@@ -1,227 +1,229 @@
 ## Context
 
-项目采用 FSD (Feature-Sliced Design) 架构，但存在以下问题：
+项目采用 FSD (Feature-Sliced Design) 架构，但当前处于新旧架构混用状态：
 
-- **代码组织不一致** - `components/` 目录与 FSD 的分层理念冲突
-- **组件过大** - 5个组件超过200行，违反单一职责原则
-- **代码重复** - 10种主要重复模式导致维护成本高
-- **React反模式** - 28处反模式问题影响代码质量和性能
+- **架构混合** - 同时存在 `components/`（传统）、`features/`（FSD）、`entities/`（FSD）、`widgets/`（FSD）、`stores/`（全局状态遗留）
+- **组件过大** - 10个文件超过200行，11个文件在150-200行之间
+- **代码重复** - 8种主要重复模式，估计 500-700 行重复代码
+- **React反模式** - 约50+处问题影响代码质量和性能
+- **基础设施缺失** - 无测试、无 ESLint 配置文件、无 Babel
 
-团队目前使用 React 18 + Zustand + TipTap 技术栈，开发效率受到影响。
+技术栈：React 18.2.0 + Zustand 4.4.7 + TipTap 3.22.2 + Vite 5.0.8 + TypeScript 5.2.2 + Tailwind CSS 3.4.0
+
+已有的良好基础设施：
+- 统一的 ApiClient（`shared/api/client.ts`）
+- ErrorBoundary 组件（`shared/ui/ErrorBoundary/`）
+- 部分 FSD 目录已建立（`pages/`、`widgets/`、`shared/`、`features/`、`entities/`）
 
 ## Goals / Non-Goals
 
 ### Goals
-1. **升级到 React 19** - 启用 React Compiler 实现自动优化
-2. **提升可维护性** - 通过组件拆分和代码复用减少维护成本
-3. **统一架构** - 完全采用 FSD 架构,消除结构混乱
-4. **提高代码质量** - 修复反模式,增强类型安全
-5. **提升开发效率** - 通过可复用组件和 hooks 加速开发
+1. **升级到 React 19** - 通过 Vite 插件启用 React Compiler 实现自动优化
+2. **提升可维护性** - 将10个超标文件拆分到200行以下
+3. **统一架构** - 完全采用 FSD 架构，消除 `components/` 和 `stores/` 遗留
+4. **提高代码质量** - 修复50+处反模式，消除 500-700 行重复代码
+5. **建立基础设施** - ESLint 配置、Vitest 测试框架
 
 ### Non-Goals
-1. **不改变业务逻辑** - 只重构代码结构,不改变功能行为
+1. **不改变业务逻辑** - 只重构代码结构，不改变功能行为
 2. **不改变外部API** - API接口保持不变
 3. **不添加新功能** - 只优化现有代码
-4. **不进行性能优化** - 专注于代码质量而非性能(除非直接影响可维护性)
+4. **不进行性能优化** - 专注于代码质量而非性能（除非直接影响可维护性）
+5. **不引入第三方 UI 库** - 自建轻量级组件库，避免新依赖
 
 ## Decisions
 
 ### 0. 升级到 React 19 (最高优先级)
-**决策**: 升级到 React 19 并启用 React Compiler
+**决策**: 升级到 React 19 并通过 Vite 插件启用 React Compiler
 
 **理由**: 
-- React 19 + React Compiler 可以自动处理 memoization，无需手动优化
-- 减少代码复杂度，移除所有手动的 `React.memo`, `useMemo`, `useCallback`
-- 官方推荐的最佳实践，长期维护成本更低
-- 编译时优化比运行时优化更可靠
+- React 19 + React Compiler 自动处理 memoization，可移除 43 处手动优化
+- Vite 插件方式比 Babel 更简单，无需引入 Babel 工具链
+- 项目当前使用 `@vitejs/plugin-react`，可通过配置直接启用 Compiler
 
 **替代方案**:
 - ❌ 保持 React 18 + 手动 memoization - 代码复杂，维护成本高
-- ✅ **升级到 React 19 + React Compiler** - 自动优化，代码更简洁
+- ❌ Babel + React Compiler - 需要引入完整 Babel 工具链，与 Vite 的 esbuild 冲突
+- ✅ **Vite 插件 + React Compiler** - 零额外依赖，配置简单
 
 **实施步骤**:
 1. 升级 React 和 React DOM 到 19.x
-2. 安装并配置 Babel + React Compiler
-3. 移除所有手动 memoization
-4. 验证编译和运行正常
+2. 安装 `@vitejs/plugin-react` 的 Compiler 支持版本
+3. 在 `vite.config.ts` 中配置 React Compiler
+4. 移除所有手动 memoization
+5. 验证编译和运行正常
 
-**风险**: React 19 相对较新，可能有未发现的 bug
-**缓解**: 在开发环境充分测试，保留回滚方案
+**风险**: React 19 相对较新，TipTap 3.22.2 兼容性需验证
+**缓解**: 在开发环境充分测试，查阅 TipTap React 19 兼容性文档
 
 ### 1. 组件拆分策略
-**决策**: 采用渐进式拆分策略,优先拆分最大的组件
+**决策**: 采用渐进式拆分策略，优先拆分最大的组件，按影响范围排序
 
-**理由**: 
-- App.tsx (520行) 影响最大,包含6个页面组件
-- 一次性全部拆分风险高,影响范围广
-- 渐进式拆分可以边重构边验证,降低风险
-
-**替代方案**:
-- ❌ 一次性重写所有大组件 - 风险高,测试成本大
-- ✅ **采用渐进式拆分** - 优先拆分 App.tsx,然后逐步拆分其他组件
+**拆分优先级**:
+1. **App.tsx (520行)** - 拆出6个页面组件到 `pages/`，App.tsx 只保留路由配置和布局
+2. **ScriptEditor.tsx (413行)** - 拆出 EditorToolbar、useLineNumbers、useEditorConfig
+3. **Canvas.tsx (344行)** - 拆出事件处理器、节点拖拽逻辑为独立 hooks
+4. **ScriptList.tsx (334行)** - 拆出 useScriptFilters、useScriptSort
+5. **CharacterCanvasPage.tsx (319行)** - 拆出对话框状态管理为 useDialog hook
+6. **scriptStore.ts (262行)** - 迁移到 FSD entities 层，抽取异步模式
+7. **character-canvas store (262行)** - 抽取异步模式，使用 createAsyncAction
+8. **VariantDetailPanel.tsx (253行)** - 拆出表单逻辑为独立 hook
+9. **docx-export.ts (236行)** - 拆出工具函数和核心导出逻辑
+10. **CharacterPanel.tsx (219行)** - 拆出角色列表和编辑逻辑
 
 ### 2. FSD架构统一
-**决策**: 保留 `components/` 作为 widgets 层,不完全迁移到 FSD
+**决策**: 完全迁移到 FSD 架构，消除遗留目录
 
-**理由**:
-- FSD 标准架构不包含 widgets 层
-- 但实际上项目中 `components/` 承担了复杂组件的职责
-- 完全迁移会破坏现有代码结构
+**迁移计划**:
+- `components/` → `widgets/` 或 `features/`（按职责分配）
+- `stores/scriptStore.ts` → `entities/script/model/store.ts`（已存在，需合并）
+- `hooks/` → `shared/hooks/`
+- `extensions/` → `features/editor/extensions/`
+- `services/` → `shared/api/`
+- `lib/` → `shared/lib/`
+- `types/` → `shared/types/`
+- `utils/` → `shared/lib/`
 
-**替代方案**:
-- ❌ 完全迁移到 FSD - 工作量大,破坏性强
-- ✅ **保留 components/ 作为 widgets 层** - 符合实际使用场景
-
-**FSD 扩展架构**:
+**FSD 标准架构**:
 ```
 apps/web/src/
-├── app/              # 应用层
-├── processes/        # 进程层(可选)
-├── pages/           # 页面层
-├── widgets/          # 复杂组件层(原 components/)
+├── app/              # 应用层（路由、全局 provider、全局样式）
+├── pages/            # 页面层
+├── widgets/          # 复杂组件层
 ├── features/         # 功能特性层
 ├── entities/         # 业务实体层
-├── shared/           # 共享层
+└── shared/           # 共享层（UI组件、hooks、lib、types、api）
 ```
 
 ### 3. 代码复用策略
 **决策**: 优先抽取高重复度、高价值的模式
 
-**优先级**:
-1. **日期格式化** - 4+ 文件重复,影响60+行
-2. **Store异步模式** - 3个 store 重复,影响300+行  
-3. **NodeView结构** - 4个组件重复,影响200+行
-4. **加载状态UI** - 10+ 处重复,影响50+行
-
-**理由**: 按照影响范围和复用价值排序
-
-**替代方案**:
-- ❌ 全部同时抽取 - 工作量大,难以管理
-- ✅ **分阶段抽取** - 先抽取高价值模式,逐步完成
+**优先级（按重复代码量排序）**:
+1. **Store 异步模式** - 3个 store 14处重复，~150行 → createAsyncAction 工厂函数
+2. **NodeView 结构** - 4个组件结构100%相似，~100行 → BaseNodeView 组件
+3. **错误处理模式** - 18个文件，~120行 → 统一错误处理工具
+4. **日期格式化** - 10个文件，~80行 → 统一使用 shared/lib/utils.ts
+5. **Loading 状态 UI** - 10+文件，~70行 → LoadingState 组件
+6. **Card 样式** - 15个文件，~40行 → Card 组件
 
 ### 4. React反模式修复策略
-**决策**: 按影响程度分批修复
+**决策**: 按严重程度分批修复
 
 **优先级**:
-1. **P0: index作为key** - 可能导致渲染错误和状态丢失
-2. **P0: useEffect依赖项缺失** - 可能导致闭包bug和状态不同步
-3. **P1: any类型滥用** - 影响类型安全
+1. **P1: index作为key (7处)** - 可能导致渲染错误和状态丢失
+   - ScriptEditor.tsx:389、CharacterList.tsx:135、CharacterPanel.tsx:176
+   - DiffViewer.tsx:110、Skeleton.tsx:52、TraitsEditor.tsx:51,65
+2. **P1: useEffect依赖项缺失 (7处)** - 可能导致闭包bug和状态不同步
+   - ScriptEditor.tsx (3处)、CanvasContextMenu.tsx (2处)、HandleMenu.tsx (1处)、use-auto-save.ts (1处)
+3. **P2: any类型滥用 (18处)** - 影响类型安全
+   - TipTap 扩展文件 (CharacterMention.ts 5处、SlashCommand.ts 3处)
+   - ScriptEditor.tsx (5处)、Canvas.tsx (4处)、NodeView组件 (2处)
 
-**注意**: ~~P2: 缺少memoization~~ - 由 React Compiler 自动处理
-
-**理由**: 按照潜在bug严重程度排序
+**注意**: ~~手动 memoization (43处)~~ - 由 React Compiler 自动处理
 
 ### 5. 共享组件库设计
-**决策**: 创建最小化的共享组件库,优先满足当前需求
+**决策**: 创建最小化的共享组件库，优先满足当前需求
 
 **组件清单**:
-1. `Card` - 统一卡片样式
-2. `Badge` - 统一徽章样式  
-3. `LoadingSpinner` - 统一加载状态
-4. `Input` - 已存在但需推广使用
-
-**理由**: 
-- 避免过度设计
-- 优先解决当前痛点
-- 可以后续扩展
-
-**替代方案**:
-- ❌ 使用第三方组件库 - 增加依赖,学习成本
-- ✅ **自建轻量级组件库** - 完全控制,易于定制
+1. `Card` - 统一卡片样式（15个文件当前有重复的 card className）
+2. `Badge` - 统一徽章样式
+3. `LoadingSpinner` - 统一加载状态（10+文件有重复的 loading UI）
+4. `LoadingState` - 完整加载状态包装组件
 
 ### 6. Hooks设计原则
-**决策**: 创建领域特定的 custom hooks,不创建过度通用的 hooks
+**决策**: 创建领域特定的 custom hooks
 
-**原则**:
-1. `useAsyncOperation` - 通用的异步操作模式
-2. `useDialog` - 通用的对话框模式
-3. `useRelativeDate` - 特定的日期格式化逻辑
+**Hooks 清单**:
+1. `useAsyncOperation` - 通用的异步操作模式（替代14处重复的 try/catch + loading/error）
+2. `useDialog` - 通用的对话框模式（CharacterCanvasPage 等多处使用）
+3. `useRelativeDate` - 特定的日期格式化逻辑（10个文件有日期格式化需求）
 
-**理由**: 
-- 领域特定 hooks 更易理解和维护
-- 避免 over-abstraction
-- 保持简单实用
+### 7. 基础设施建设
+**决策**: 添加缺失的基础设施
+
+**新增**:
+1. ESLint 配置文件 - 启用 `react-hooks/exhaustive-deps` 规则为 error
+2. Vitest 测试框架 - 为共享组件和 hooks 提供测试支持
 
 ## Risks / Trade-offs
+
 ### Risk 1: 重构过程中引入新bug
-**影响**: 中等
+**影响**: 高
 **概率**: 中等
 **缓解措施**:
 - 采用渐进式重构策略
-- 每次重构后运行完整测试
-- 保留原有代码备份(通过git分支)
+- 每次重构后手动验证功能正常
+- 通过 git 分支隔离变更
 
-### Risk 2: 团队适应新架构
-**影响**: 低
-**概率**: 高
+### Risk 2: React 19 + TipTap 兼容性
+**影响**: 高
+**概率**: 低-中
 **缓解措施**:
-- 提供清晰的架构文档
-- 进行代码评审
-- 结对编程(Pair programming)进行知识传递
+- 先在开发环境验证所有 TipTap 功能
+- 查阅 TipTap React 19 兼容性文档
+- 保留回滚方案
+
+### Risk 3: 架构迁移破坏现有代码
+**影响**: 高
+**概率**: 中等
+**缓解措施**:
+- 分阶段迁移（先迁移 stores/，再迁移 components/）
+- 使用路径别名减少迁移影响
+- 保持导入路径兼容性
 
 ### Trade-off 1: 重构时间 vs 长期收益
-**权衡**: 短期投入时间,长期获得更高的开发效率
-**决策**: 接受短期投入,优先重构高价值部分
+**权衡**: 短期投入时间，长期获得更高的开发效率
+**决策**: 接受短期投入，优先重构高价值部分
 
 ### Trade-off 2: 完美主义 vs 实用主义
 **权衡**: 追求完美架构 vs 实用可维护的代码
-**决策**: 优先实用,避免过度设计
-
-### Trade-off 3: 通用性 vs 简单性
-**权衡**: 创建通用组件 vs 简单直接的解决方案
-**决策**: 优先简单,按需扩展
+**决策**: 优先实用，避免过度设计
 
 ## Migration Plan
-### 阶段1: 基础设施准备 (1-2天)
-1. 创建共享UI组件库
-   - Card, Badge, LoadingSpinner 组件
-   - 单元测试
-2. 创建 custom hooks
-   - useAsyncOperation, useDialog, useRelativeDate
-   - 单元测试
-3. 设置 ESLint 规则
-   - 添加 `react-hooks/exhaustive-deps` 规则
+
+### 阶段0: React 19 升级 (1天)
+1. 升级 React 到 19.x 及相关类型
+2. 配置 Vite 使用 React Compiler
+3. 验证所有功能正常工作
+4. 移除手动 memoization
+
+### 阶段1: 基础设施准备 (1天)
+1. 添加 ESLint 配置文件，启用 exhaustive-deps 规则
+2. 配置 Vitest 测试框架
+3. 创建共享 UI 组件库（Card、Badge、LoadingSpinner、LoadingState）
+4. 创建 custom hooks（useAsyncOperation、useDialog、useRelativeDate）
+5. 创建 createAsyncAction 工厂函数
 
 ### 阶段2: 核心组件重构 (3-5天)
-1. **拆分 App.tsx** (优先级最高)
-   - 将6个页面组件移至 `pages/` 目录
-   - 保持 App.tsx 只负责路由配置
-   - 集成测试
-2. **创建 BaseNodeView**
-   - 抽取 NodeView 共同逻辑
-   - 重构4个 NodeView 组件
-3. **修复 React 反模式** (P0级别)
-   - 修复 index 作为 key
-   - 修复 useEffect 依赖项
+1. 拆分 App.tsx → 6个页面组件
+2. 拆分 ScriptEditor.tsx → EditorToolbar + hooks
+3. 拆分 Canvas.tsx → 事件处理 hooks
+4. 拆分 ScriptList.tsx → 过滤/排序 hooks
+5. 拆分 CharacterCanvasPage.tsx → useDialog
+6. 创建 BaseNodeView 组件，重构4个 NodeView
+7. 修复 React 反模式（index key、useEffect 依赖）
 
-### 阶段3: 代码复用优化 (2-3天)
-1. **统一日期格式化**
-   - 替换所有独立实现为 shared 版本
-2. **抽取 Store 异步模式**
-   - 创建 useAsyncOperation hook
-   - 重构3个 store
-3. **统一 UI 样式**
-   - 替换重复的卡片/输入框样式
+### 阶段3: 架构统一与代码复用 (2-3天)
+1. 迁移 `stores/scriptStore.ts` 到 `entities/script/model/`
+2. 迁移 `components/` 到 `widgets/` 或 `features/`
+3. 迁移 `hooks/`、`lib/`、`types/`、`utils/` 到 `shared/`
+4. 统一日期格式化（10个文件）
+5. 重构 Store 异步模式（3个 store）
+6. 统一 UI 样式（Card、Loading）
 
-### 阶段4: 类型安全改进 (1-2天)
-1. **修复 any 类型**
-   - 为 TipTap 扩展定义类型
-   - 替换所有 any 为具体类型
-2. **添加缺失的类型定义**
-   - API 响应类型
-   - 组件 Props 类型
+### 阶段4: 类型安全与验证 (1-2天)
+1. 修复 TipTap 扩展的 any 类型（8处）
+2. 修复其他 any 类型（10处）
+3. 运行完整功能验证
+4. 运行 ESLint 检查
 
 ### 回滚策略
-如果重构出现严重问题:
-1. **Git分支策略**: 每个阶段在独立分支进行
-   - `feature/frontend-refactor-phase1`
-   - `feature/frontend-refactor-phase2`
-   - ...
-2. **快速回滚**: 如果某个阶段失败,可以快速回滚到上一个稳定版本
-3. **增量发布**: 每个阶段完成后合并到主分支,不一次性发布所有变更
+- Git 分支策略：每个阶段在独立分支进行
+- 快速回滚：如果某个阶段失败，可以快速回滚到上一个稳定版本
+- 增量发布：每个阶段完成后合并到主分支
 
 ## Open Questions
-1. **测试策略**: 当前测试覆盖率如何?是否需要添加更多测试?
-2. **文档需求**: 是否需要为新的架构和组件编写文档?
-3. **性能基准**: 重构后是否需要进行性能对比测试?
-4. **团队培训**: 是否需要对团队进行新架构和最佳实践的培训?
+1. **TipTap 3.22.2 与 React 19 的兼容性** - 需要验证，可能需要升级 TipTap
+2. **测试策略** - 当前无任何测试，需要决定测试覆盖的优先级
+3. **架构迁移顺序** - `components/` 和 `stores/` 哪个先迁移？
+4. **性能基准** - 重构后是否需要性能对比测试？

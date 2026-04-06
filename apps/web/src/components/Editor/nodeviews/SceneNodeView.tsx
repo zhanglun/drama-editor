@@ -1,16 +1,16 @@
 import { NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/core'
-import { useCallback } from 'react'
+
 import { Film } from 'lucide-react'
 import { NodeToolbar } from './NodeToolbar'
 
 export function SceneNodeView({ node, selected, updateAttributes, editor, getPos, deleteNode }: NodeViewProps) {
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
+  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     const target = e.currentTarget
     if (target.textContent) {
       updateAttributes({ heading: target.textContent })
     }
-  }, [updateAttributes])
+  }
 
   return (
     <NodeViewWrapper>

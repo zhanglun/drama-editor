@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import type { Editor } from '@tiptap/core'
 
@@ -11,7 +11,7 @@ interface NodeToolbarProps {
 export function NodeToolbar({ editor, getPos, onDelete }: NodeToolbarProps) {
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
 
-  const handleMoveUp = useCallback(() => {
+  const handleMoveUp = () => {
     const pos = getPos()
     if (pos === undefined) return
     
@@ -37,9 +37,9 @@ export function NodeToolbar({ editor, getPos, onDelete }: NodeToolbarProps) {
 
     dispatch(tr)
     editor.commands.focus(prevNodePos + 1)
-  }, [editor, getPos])
+  }
 
-  const handleMoveDown = useCallback(() => {
+  const handleMoveDown = () => {
     const pos = getPos()
     if (pos === undefined) return
     
@@ -66,14 +66,14 @@ export function NodeToolbar({ editor, getPos, onDelete }: NodeToolbarProps) {
 
     dispatch(tr)
     editor.commands.focus(pos + nextNodeSize + 1)
-  }, [editor, getPos])
+  }
 
-  const canMoveUp = useCallback(() => {
+  const canMoveUp = () => {
     const pos = getPos()
     return pos !== undefined && pos > 1
-  }, [getPos])
+  }
 
-  const canMoveDown = useCallback(() => {
+  const canMoveDown = () => {
     const pos = getPos()
     if (pos === undefined) return false
     
@@ -84,7 +84,7 @@ export function NodeToolbar({ editor, getPos, onDelete }: NodeToolbarProps) {
     
     const nextNodePos = pos + currentNode.nodeSize
     return nextNodePos < state.doc.content.size
-  }, [editor, getPos])
+  }
 
   const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }) => (
     <div 

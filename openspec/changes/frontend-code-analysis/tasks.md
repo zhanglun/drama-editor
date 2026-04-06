@@ -1,176 +1,225 @@
-## 0. React 19 升级 (最高优先级)
+## 0. 基础设施准备
 
-- [ ] 0.1 升级 React 依赖
+- [x] 0.1 配置 ESLint
+  - 创建 `.eslintrc.js` 或 `eslint.config.js` 配置文件
+  - 启用 `react-hooks/exhaustive-deps` 规则为 "error"
+  - 确认 `eslint-plugin-react-hooks` (^4.6.0) 已安装
+  - 运行 `pnpm lint` 验证配置正常
+
+- [x] 0.2 配置 Vitest 测试框架
+  - 安装 `vitest` 和 `@testing-library/react` 依赖
+  - 创建 `apps/web/vitest.config.ts` 配置文件
+  - 添加测试脚本到 `apps/web/package.json`
+  - 创建示例测试文件验证框架工作
+
+## 1. React 19 升级 (最高优先级)
+
+- [x] 1.1 升级 React 依赖
   - 更新 `apps/web/package.json` 中的 React 版本
   - `react` 从 `^18.2.0` 升级到 `^19.0.0`
   - `react-dom` 从 `^18.2.0` 升级到 `^19.0.0`
-  - `@types/react` 从 `^18.2.0` 升级到 `^19.0.0`
-  - `@types/react-dom` 从 `^18.2.0` 升级到 `^19.0.0`
+  - `@types/react` 从 `^18.2.43` 升级到 `^19.0.0`
+  - `@types/react-dom` 从 `^18.2.17` 升级到 `^19.0.0`
   - 运行 `pnpm install` 更新依赖
 
-- [ ] 0.2 安装和配置 Babel + React Compiler
-  - 安装 Babel 依赖：`@babel/core`, `@babel/preset-env`, `@babel/preset-react`, `@babel/preset-typescript`
-  - 安装 React Compiler：`babel-plugin-react-compiler`
-  - 创建 `apps/web/babel.config.js` 配置文件
-  - 配置 React Compiler 插件
-  - 配置 TypeScript 和 React presets
-
-- [ ] 0.3 配置 Vite 使用 Babel
-  - 更新 `apps/web/vite.config.ts`（如需要）
-  - 确保 Vite 正确使用 Babel 配置
+- [x] 1.2 安装和配置 React Compiler (通过 Vite)
+  - 安装 `babel-plugin-react-compiler` 和 `@babel/core` 为 devDependencies
+  - **不**安装完整 Babel 工具链 (不需要 @babel/preset-*)
+  - **不**创建 babel.config.js 文件
+  - 更新 `apps/web/vite.config.ts`，在 `@vitejs/plugin-react` 中配置 babel 选项启用 React Compiler
   - 验证开发服务器启动正常
 
-- [ ] 0.4 验证 React Compiler 正常工作
+- [x] 1.3 验证 React Compiler 正常工作
   - 运行 `pnpm dev` 启动开发服务器
   - 检查控制台无编译错误
   - 运行 `pnpm build` 验证生产构建
-  - 使用 React DevTools 验证优化生效
+  - **重点测试 TipTap 编辑器**所有功能：
+    - 场景、对白、动作、转场节点
+    - 斜杠命令菜单
+    - 角色提及菜单
+    - 节点工具栏
+    - 自动保存
 
-- [ ] 0.5 移除手动 memoization
-  - 移除所有 `React.memo()` 包装
-  - 移除仅用于性能优化的 `useMemo()`（保留语义用途的）
-  - 移除仅用于性能优化的 `useCallback()`（保留依赖数组稳定性的）
-  - 添加注释说明保留的 memoization 用途
-  - 运行测试验证功能正常
+- [x] 1.4 移除手动 memoization
+  - 移除 `features/character-canvas/ui/HandleMenu.tsx` 中的 `React.memo()` 包装 (line 93)
+  - 评估所有 `useCallback()` 使用 (30+处)：
+    - Canvas.tsx (9处)、CharacterCanvasPage.tsx (5处)、useNodeOperations.ts (6处)
+    - CustomHandle.tsx (5处)、NodeToolbar.tsx (4处)
+    - 仅保留用于 useEffect 依赖数组稳定性的，其余移除
+  - 评估所有 `useMemo()` 使用 (5处)：
+    - ScriptList.tsx (1处)、use-diff.ts (3处)、Canvas.tsx (1处)
+    - 仅保留用于真正昂贵计算的，其余移除
+  - 保留的 memoization 必须添加注释说明原因
 
-## 1. 基础设施准备
+## 2. 创建共享组件和 hooks
 
-- [ ] 1.1 创建共享UI组件库
-  - 创建 `apps/web/src/shared/ui/Card/Card.tsx`
-  - 创建 `apps/web/src/shared/ui/Badge/Badge.tsx`
-  - 创建 `apps/web/src/shared/ui/Loading/LoadingSpinner.tsx`
-  - 创建 `apps/web/src/shared/ui/Loading/LoadingState.tsx`
-  - 创建 `apps/web/src/shared/ui/index.ts` 导出文件
-  - 为每个组件添加单元测试
+- [ ] 2.1 创建共享UI组件库
+  - 创建 `shared/ui/Card/Card.tsx` - 统一卡片样式 (15个文件有重复 card className)
+  - 创建 `shared/ui/Badge/Badge.tsx` - 统一徽章样式
+  - 创建 `shared/ui/Loading/LoadingSpinner.tsx` - 统一加载 spinner (10+文件重复)
+  - 创建 `shared/ui/Loading/LoadingState.tsx` - 完整加载状态包装
+  - 更新 `shared/ui/index.ts` 导出文件
+  - 使用 `clsx` 和 `tailwind-merge` (`cn` 工具函数) 组合 className
 
-- [ ] 1.2 创建自定义hooks
-  - 创建 `apps/web/src/shared/hooks/useAsyncOperation.ts`
-  - 创建 `apps/web/src/shared/hooks/useDialog.ts`
-  - 创建 `apps/web/src/shared/hooks/useRelativeDate.ts`
-  - 创建 `apps/web/src/shared/hooks/index.ts` 导出文件
-  - 为每个hook添加单元测试
+- [ ] 2.2 创建自定义hooks
+  - 创建 `shared/hooks/useAsyncOperation.ts` - 通用异步操作模式
+  - 创建 `shared/hooks/useDialog.ts` - 对话框状态管理 (CharacterCanvasPage 等使用)
+  - 创建 `shared/hooks/useRelativeDate.ts` - 相对日期格式化 (10个文件有日期格式化需求)
+  - 更新 `shared/hooks/index.ts` 导出文件
 
-- [ ] 1.3 配置ESLint规则
-  - 添加 `eslint-plugin-react-hooks` 依赖
-  - 在 `.eslintrc` 中启用 `react-hooks/exhaustive-deps` 规则
-  - 测试ESLint配置是否正常工作
+- [ ] 2.3 创建 Store 异步 action 工厂
+  - 创建 `shared/lib/create-async-action.ts` - Zustand 异步 action 工厂函数
+  - 自动处理 `set({ isLoading: true, error: null })` → try → catch 模式
+  - 支持泛型，类型安全
 
-## 2. 核心组件重构
+- [ ] 2.4 创建 BaseNodeView 组件
+  - 创建 `components/Editor/nodeviews/BaseNodeView.tsx`
+  - 提取4个 NodeView 的共同结构：
+    - NodeViewWrapper → div with gradient background
+    - NodeToolbar 集成
+    - Type label (icon + text)
+    - NodeViewContent
+  - 支持 type、icon、colorScheme、selected 等配置
 
-- [ ] 2.1 拆分App.tsx (最高优先级)
-  - 创建 `apps/web/src/pages/HomePage.tsx`
-  - 创建 `apps/web/src/pages/ScriptsPage.tsx`
-  - 创建 `apps/web/src/pages/NewScriptPage.tsx`
-  - 创建 `apps/web/src/pages/ScriptEditorPage.tsx`
-  - 创建 `apps/web/src/pages/VersionsPage.tsx`
-  - 创建 `apps/web/src/pages/DiffPage.tsx`
-  - 重构 `App.tsx` 只保留路由配置
-  - 运行集成测试验证路由正常
+## 3. 核心组件重构
 
-- [ ] 2.2 拆分ScriptEditor.tsx
-  - 创建 `apps/web/src/components/Editor/EditorToolbar.tsx`
-  - 创建 `apps/web/src/components/Editor/hooks/useLineNumbers.ts`
-  - 创建 `apps/web/src/components/Editor/hooks/useEditorConfig.ts`
-  - 重构 `ScriptEditor.tsx` 使用新的组件和hooks
-  - 运行测试验证编辑器功能
+- [ ] 3.1 拆分 App.tsx (520行 → ~50行 + 6个页面文件)
+  - 创建 `pages/HomePage.tsx` (从 App.tsx 提取)
+  - 创建 `pages/ScriptsPage.tsx` (从 App.tsx 提取)
+  - 创建 `pages/NewScriptPage.tsx` (从 App.tsx 提取)
+  - 创建 `pages/ScriptEditorPage.tsx` (从 App.tsx 提取，含 API 调用迁移)
+  - 创建 `pages/VersionsPage.tsx` (从 App.tsx 提取)
+  - 创建 `pages/DiffPage.tsx` (从 App.tsx 提取，含 API 调用迁移)
+  - 重构 App.tsx 只保留路由配置和布局
+  - **将 ScriptEditorPage 和 DiffPage 中的直接 fetch 调用迁移到 store**
 
-- [ ] 2.3 拆分ScriptList.tsx
-  - 创建 `apps/web/src/components/ScriptList/hooks/useScriptFilters.ts`
-  - 创建 `apps/web/src/components/ScriptList/hooks/useScriptSort.ts`
-  - 重构 `ScriptList.tsx` 使用新的hooks
-  - 运行测试验证列表功能
+- [ ] 3.2 拆分 ScriptEditor.tsx (413行)
+  - 创建/更新 `widgets/editor-toolbar/` 工具栏组件
+  - 创建 `components/Editor/hooks/useLineNumbers.ts` 行号计算 hook
+  - 创建 `components/Editor/hooks/useEditorConfig.ts` 编辑器配置 hook
+  - 重构 ScriptEditor.tsx 使用新组件和 hooks
 
-- [ ] 2.4 创建BaseNodeView组件
-  - 创建 `apps/web/src/components/Editor/nodeviews/BaseNodeView.tsx`
-  - 重构 `DialogueNodeView.tsx` 使用 BaseNodeView
-  - 重构 `ActionNodeView.tsx` 使用 BaseNodeView
-  - 重构 `SceneNodeView.tsx` 使用 BaseNodeView
-  - 重构 `TransitionNodeView.tsx` 使用 BaseNodeView
-  - 运行测试验证节点视图
+- [ ] 3.3 拆分 Canvas.tsx (344行)
+  - 创建 `features/character-canvas/model/useCanvasEvents.ts` 事件处理 hook
+  - 创建 `features/character-canvas/model/useNodeDrag.ts` 节点拖拽 hook
+  - 重构 Canvas.tsx 只保留渲染逻辑
 
-## 3. React反模式修复 (P0)
+- [ ] 3.4 拆分 ScriptList.tsx (334行)
+  - 创建 `components/ScriptList/hooks/useScriptFilters.ts` 过滤逻辑
+  - 创建 `components/ScriptList/hooks/useScriptSort.ts` 排序逻辑
+  - 重构 ScriptList.tsx 使用新 hooks
 
-- [ ] 3.1 修复index作为key的问题
-  - CharacterList.tsx: 使用 `character.id` 或 `character.name` 作为key
-  - CharacterPanel.tsx: 使用 `character.id` 或 `character.name` 作为key
-  - ScriptEditor.tsx (行号): 使用 `lineNumber` 作为key
-  - DiffViewer.tsx: 使用 `${lineNumber}-${type}` 作为key
-  - TraitsEditor.tsx: 使用 `trait.id` 或生成唯一ID
-  - 运行测试验证渲染正确性
+- [ ] 3.5 拆分 CharacterCanvasPage.tsx (319行)
+  - 使用 `useDialog` hook 替代内联对话框状态管理
+  - 提取对话框组件为独立文件
+  - 重构 CharacterCanvasPage.tsx 为页面布局组件
 
-- [ ] 3.2 修复useEffect依赖项问题
-  - ScriptEditor.tsx (行号计算): 将 `calculateLineHeights` 包装在 `useCallback` 中
-  - ScriptEditor.tsx (其他useEffect): 添加缺失的依赖项
-  - use-auto-save.ts: 添加所有使用的值到依赖数组
-  - 运行测试验证没有闭包bug
+- [ ] 3.6 重构 NodeView 组件 (使用 BaseNodeView)
+  - 重构 `DialogueNodeView.tsx` 使用 BaseNodeView (69行)
+  - 重构 `ActionNodeView.tsx` 使用 BaseNodeView (31行)
+  - 重构 `SceneNodeView.tsx` 使用 BaseNodeView (44行)
+  - 重构 `TransitionNodeView.tsx` 使用 BaseNodeView (31行)
 
-## 4. 代码复用优化
+- [ ] 3.7 重构其他超标文件
+  - 拆分 `VariantDetailPanel.tsx` (253行) - 提取表单逻辑
+  - 拆分 `CharacterPanel.tsx` (219行) - 提取列表和编辑逻辑
+  - 拆分 `docx-export.ts` (236行) - 分离工具函数和导出逻辑
 
-- [ ] 4.1 统一日期格式化
-  - 检查所有使用独立 `formatDate` 的组件
-  - 替换为使用 `shared/lib/utils.ts` 中的版本
-  - ScriptCard.tsx: 使用共享版本
-  - VersionList.tsx: 使用共享版本
-  - 删除组件中的独立 `formatDate` 函数
-  - 运行测试验证日期显示正确
+## 4. React 反模式修复
 
-- [ ] 4.2 抽取Store异步模式
-  - 创建 `apps/web/src/shared/lib/create-async-store.ts` 工厂函数
-  - 或创建 `useAsyncOperation` hook (已在1.2完成)
-  - 重构 `apps/web/src/entities/script/model/store.ts` 使用新模式
-  - 重构 `apps/web/src/entities/version/model/store.ts` 使用新模式
-  - 重构 `apps/web/src/entities/character/model/store.ts` 使用新模式
-  - 运行测试验证store功能
+- [ ] 4.1 修复 index 作为 key (7处)
+  - `components/Editor/ScriptEditor.tsx` (line 389): 使用 `lineNumber` 作为 key
+  - `entities/character/ui/CharacterList.tsx` (line 135): 使用 `character.id` 作为 key
+  - `components/Character/CharacterPanel.tsx` (line 176): 使用 `character.id` 或唯一标识
+  - `features/diff-viewer/ui/DiffViewer.tsx` (line 110): 使用 `${lineNumber}-${type}`
+  - `shared/ui/Skeleton/Skeleton.tsx` (line 52): 使用稳定 key
+  - `features/character-canvas/ui/TraitsEditor.tsx` (line 51, 65): 使用 `trait.id` 或生成唯一 ID
 
-- [ ] 4.3 统一UI样式
-  - ScriptMetadataPanel.tsx: 使用 `shared/ui/Input/Input` 组件
-  - App.tsx: 使用 `shared/ui/Input/Input` 组件
-  - 替换所有重复的输入框className
-  - 替换所有重复的卡片className为使用 `Card` 组件
-  - 运行UI测试验证样式一致
+- [ ] 4.2 修复 useEffect 依赖项缺失 (7处)
+  - `components/Editor/ScriptEditor.tsx` (3处): 将 `calculateLineHeights` 包装在 useCallback 中或添加到依赖
+  - `features/character-canvas/ui/CanvasContextMenu.tsx` (2处): 添加 `onClose` 到依赖数组
+  - `features/character-canvas/ui/HandleMenu.tsx` (1处): 添加 `onClose` 到依赖数组
+  - `features/auto-save/model/use-auto-save.ts` (1处): 修正 `debouncedSave` 依赖
 
-- [ ] 4.4 抽取预览文本逻辑
-  - 创建 `apps/web/src/shared/lib/script-utils.ts`
-  - 添加 `getScriptPreview` 函数
-  - 重构 `entities/script/ui/ScriptCard.tsx` 使用共享函数
-  - 重构 `components/ScriptList/ScriptCard.tsx` 使用共享函数
-  - 删除组件中的独立 `getPreview` 函数
-  - 运行测试验证预览文本正确
+- [ ] 4.3 修复 any 类型 (18处)
+  - **TipTap 扩展** (8处):
+    - `extensions/CharacterMention.ts` (5处: lines 71, 73, 76, 112, 124)
+    - `extensions/SlashCommand.ts` (3处: lines 55, 59, 137)
+    - 从 `@tiptap/core` 或 `@tiptap/suggestion` 导入正确类型
+  - **编辑器** (5处):
+    - `components/Editor/ScriptEditor.tsx` (5处: lines 72, 73, 75, 76, 90)
+    - 定义 TipTap node 类型接口
+  - **画布** (4处):
+    - `features/character-canvas/ui/Canvas.tsx` (4处: lines 132, 211, 214)
+    - 使用 `@xyflow/react` 的正确类型
+  - **节点** (2处):
+    - `CharacterNode.tsx` (line 8) 和 `VariantNode.tsx` (line 9)
+    - 定义 node data 类型接口
 
-## 5. 类型安全改进
+- [ ] 4.4 清理 console.log
+  - `components/Editor/ScriptEditor.tsx` (line 83): 移除或用 `import.meta.env.DEV` 包裹
 
-- [ ] 5.1 修复TipTap扩展的any类型
-  - 为 `SlashCommand.ts` 中的 suggestion props 定义类型
-  - 为 `CharacterMention.ts` 中的 suggestion props 定义类型
-  - 导入 `SuggestionProps` 类型或创建自定义类型
-  - 替换所有 `any` 为具体类型
-  - 添加JSDoc注释说明类型
-  - 运行类型检查验证类型安全
+## 5. 代码复用优化
 
-- [ ] 5.2 修复API响应的any类型
-  - 为 API 响应定义类型接口
-  - 替换所有 `(response as any)` 为具体类型
-  - 为 ScriptCanvas API 响应添加类型
-  - 为其他 API 响应添加类型
-  - 运行类型检查验证类型安全
+- [ ] 5.1 统一日期格式化 (10个文件)
+  - `entities/script/ui/ScriptCard.tsx`: 删除独立 formatDate (lines 9-28)，使用 shared 版本
+  - `components/ScriptList/ScriptCard.tsx`: 删除独立 formatDate (lines 16-23)，使用 shared 版本
+  - `App.tsx`: 替换内联 `new Date().toLocaleDateString()` 为共享函数
+  - 导出相关文件 (pdf-export.ts, txt-export.ts): 使用共享日期函数
+  - 更新 `shared/lib/utils.ts` 中的 `formatDate` 支持相对日期格式
 
-## 6. 文档和测试
+- [ ] 5.2 重构 Store 异步模式 (3个 store, ~150行重复)
+  - 重构 `entities/script/model/store.ts` 使用 `createAsyncAction`
+  - 重构 `entities/version/model/store.ts` 使用 `createAsyncAction`
+  - 重构 `features/character-canvas/model/store.ts` 使用 `createAsyncAction`
+  - 迁移 `stores/scriptStore.ts` 到 `entities/script/model/store.ts`，消除 `stores/` 目录
 
-- [ ] 6.1 添加组件文档
-  - 为新的共享UI组件添加JSDoc注释
-  - 为新的hooks添加使用示例
-  - 为重构的组件添加变更日志注释
-  - 创建 `apps/web/docs/ARCHITECTURE.md` 说明项目架构
-  - 添加 React 19 + React Compiler 使用说明
+- [ ] 5.3 统一 UI 样式
+  - 替换15个文件中重复的 card className 为 `Card` 组件
+  - 替换10+文件中重复的 loading UI 为 `LoadingSpinner`/`LoadingState` 组件
+  - 替换重复的 input 样式为 `shared/ui/Input/` 组件
 
-- [ ] 6.2 补充测试覆盖
-  - 为共享UI组件添加单元测试
-  - 为自定义hooks添加单元测试
-  - 为重构的页面组件添加集成测试
-  - 验证 React Compiler 优化效果
-  - 运行测试覆盖率报告
+## 6. 架构统一 (FSD 迁移)
 
-- [ ] 6.3 代码审查
-  - 提交Pull Request进行代码审查
-  - 处理代码审查反馈
-  - 合并到主分支
+- [ ] 6.1 迁移遗留目录到 FSD 结构
+  - `stores/scriptStore.ts` → 合并到 `entities/script/model/store.ts`
+  - `components/` → 按 FSD 层级分配:
+    - `components/Editor/` → `features/editor/` 或 `widgets/editor/`
+    - `components/ScriptList/` → `widgets/script-list/` (已部分完成)
+    - `components/Character/` → `entities/character/ui/` 或 `widgets/character/`
+    - `components/ScriptMetadataPanel.tsx` → `features/metadata/ui/`
+    - `components/Diff/` → `features/diff-viewer/` (已部分完成)
+    - `components/Version/` → `entities/version/ui/`
+    - `components/Export/` → `features/export/ui/`
+  - `extensions/` → `features/editor/extensions/`
+  - `services/` → `shared/api/`
+  - `lib/` → `shared/lib/`
+  - `types/` → `shared/types/`
+  - `utils/` → `shared/lib/`
+  - `hooks/` → `shared/hooks/`
+
+- [ ] 6.2 更新所有导入路径
+  - 使用路径别名 `@/` 前缀减少迁移影响
+  - 验证所有导入路径更新后无错误
+  - 运行 `pnpm build` 验证构建成功
+
+## 7. 验证与收尾
+
+- [ ] 7.1 运行 ESLint 检查
+  - 确认无 `exhaustive-deps` 警告
+  - 确认无 TypeScript 类型错误
+  - 修复所有 lint 报告的问题
+
+- [ ] 7.2 运行完整功能验证
+  - 剧本 CRUD 操作
+  - 编辑器所有节点类型
+  - 斜杠命令和角色提及
+  - 自动保存功能
+  - 版本历史和 Diff 对比
+  - 导出功能 (PDF/DOCX/TXT)
+  - 角色画布功能
+
+- [ ] 7.3 运行构建验证
+  - `pnpm build` 成功
+  - `pnpm typecheck` 无错误
+  - `pnpm lint` 无错误

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import { useCanvasStore } from './store'
 import { debounce } from '../../../shared/lib/utils'
 
@@ -18,9 +18,9 @@ export function useCanvasSync(scriptId: string | null) {
     }
   }, [isDirty, scriptId, debouncedSync])
 
-  const forceSync = useCallback(async () => {
+  const forceSync = async () => {
     await syncToServer()
-  }, [syncToServer])
+  }
 
   return { forceSync }
 }

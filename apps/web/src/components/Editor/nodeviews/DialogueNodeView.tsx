@@ -1,6 +1,6 @@
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/core'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
 import { NodeToolbar } from './NodeToolbar'
 
@@ -8,17 +8,17 @@ export function DialogueNodeView({ node, selected, updateAttributes, editor, get
   const [character, setCharacter] = useState(node.attrs.character || '')
   const [parenthetical, setParenthetical] = useState(node.attrs.parenthetical || '')
 
-  const handleCharacterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCharacterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setCharacter(value)
     updateAttributes({ character: value })
-  }, [updateAttributes])
+  }
 
-  const handleParentheticalChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleParentheticalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setParenthetical(value)
     updateAttributes({ parenthetical: value })
-  }, [updateAttributes])
+  }
 
   return (
     <NodeViewWrapper>

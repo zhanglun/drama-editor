@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useScriptStore } from '../../stores/scriptStore'
 import { ScriptCard } from './ScriptCard'
@@ -20,44 +20,40 @@ export function ScriptList() {
     loadScripts()
   }, [loadScripts])
 
-  const filteredAndSortedScripts = useMemo(() => {
-    let filtered = scripts
+  let filtered = scripts
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      filtered = scripts.filter(script => {
-        const titleMatch = script.title.toLowerCase().includes(query)
-        const descriptionMatch = script.description?.toLowerCase().includes(query) || false
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase()
+    filtered = scripts.filter(script => {
+      const titleMatch = script.title.toLowerCase().includes(query)
+      const descriptionMatch = script.description?.toLowerCase().includes(query) || false
 
-        let contentMatch = false
-        if (script.content?.content) {
-          const contentText = script.content.content
-            .map(node => node.text || '')
-            .join(' ')
-            .toLowerCase()
-          contentMatch = contentText.includes(query)
-        }
-
-        return titleMatch || descriptionMatch || contentMatch
-      })
-    }
-
-    const sorted = [...filtered].sort((a, b) => {
-      let comparison = 0
-
-      if (sortBy === 'title') {
-        comparison = a.title.localeCompare(b.title)
-      } else if (sortBy === 'updated_at') {
-        comparison = new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
-      } else if (sortBy === 'created_at') {
-        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      let contentMatch = false
+      if (script.content?.content) {
+        const contentText = script.content.content
+          .map(node => node.text || '')
+          .join(' ')
+          .toLowerCase()
+        contentMatch = contentText.includes(query)
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return titleMatch || descriptionMatch || contentMatch
     })
+  }
 
-    return sorted
-  }, [scripts, sortBy, sortOrder, searchQuery])
+  const filteredAndSortedScripts = [...filtered].sort((a, b) => {
+    let comparison = 0
+
+    if (sortBy === 'title') {
+      comparison = a.title.localeCompare(b.title)
+    } else if (sortBy === 'updated_at') {
+      comparison = new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
+    } else if (sortBy === 'created_at') {
+      comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison
+  })
 
   const handleSortChange = (newSortBy: SortBy) => {
     if (sortBy === newSortBy) {

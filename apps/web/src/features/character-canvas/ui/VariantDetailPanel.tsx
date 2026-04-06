@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { X, Save, Loader2 } from 'lucide-react'
 import { getVariant, updateVariant } from '../api'
 import { TraitsEditor } from './TraitsEditor'
@@ -53,13 +53,13 @@ export function VariantDetailPanel({ scriptId, variantId, onClose }: VariantDeta
     fetchVariant()
   }, [scriptId, variantId])
 
-  const reloadVariant = useCallback(async () => {
+  const reloadVariant = async () => {
     const response = await getVariant(scriptId, variantId)
     if (response.data) {
       setVariant(response.data)
       setSceneIds(response.data.scene_ids || [])
     }
-  }, [scriptId, variantId])
+  }
 
   const handleSave = async () => {
     if (!name.trim()) {

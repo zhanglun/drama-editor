@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface MentionItem {
   id: string
@@ -19,12 +19,12 @@ export function MentionList({ items, command }: MentionListProps) {
     item.label.toLowerCase().includes(query.toLowerCase())
   )
 
-  const selectItem = useCallback((index: number) => {
+  const selectItem = (index: number) => {
     const item = filteredItems[index]
     if (item) {
       command(item)
     }
-  }, [filteredItems, command])
+  }
 
   useEffect(() => {
     setSelectedIndex(0)

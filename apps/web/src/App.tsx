@@ -2,7 +2,7 @@ import { ScriptList } from './components/ScriptList/ScriptList'
 import { CharacterCanvasPage } from './pages/CharacterCanvasPage'
 
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useScriptStore } from './stores/scriptStore'
 import { useVersionStore } from './entities/version/model/store'
 import { DiffViewer } from './features/diff-viewer/ui/DiffViewer'
@@ -208,9 +208,9 @@ function ScriptEditorPage() {
       return () => window.removeEventListener('keydown', handleKeyDown)
     }, [forceSave])
 
-    const handleContentChange = useCallback((content: ScriptContent) => {
+    const handleContentChange = (content: ScriptContent) => {
       setEditorContent(content)
-    }, [])
+    }
 
     if (isLoading) {
       return (
