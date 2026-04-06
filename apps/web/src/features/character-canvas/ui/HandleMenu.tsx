@@ -69,7 +69,7 @@ export function HandleMenu({ x, y, nodeId, nodeType, mode, onSelect, onClose }: 
       </div>
       
       <button
-        onClick={() => handleSelect('create-child')}
+        onClick={() => handleSelect('create-variant')}
         className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
       >
         <Plus className="w-4 h-4" />
