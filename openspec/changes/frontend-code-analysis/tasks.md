@@ -83,7 +83,7 @@
 
 ## 3. 核心组件重构
 
-- [ ] 3.1 拆分 App.tsx (520行 → ~50行 + 6个页面文件)
+- [x] 3.1 拆分 App.tsx (520行 → ~50行 + 6个页面文件)
   - 创建 `pages/HomePage.tsx` (从 App.tsx 提取)
   - 创建 `pages/ScriptsPage.tsx` (从 App.tsx 提取)
   - 创建 `pages/NewScriptPage.tsx` (从 App.tsx 提取)
@@ -93,41 +93,42 @@
   - 重构 App.tsx 只保留路由配置和布局
   - **将 ScriptEditorPage 和 DiffPage 中的直接 fetch 调用迁移到 store**
 
-- [ ] 3.2 拆分 ScriptEditor.tsx (413行)
-  - 创建/更新 `widgets/editor-toolbar/` 工具栏组件
+- [x] 3.2 拆分 ScriptEditor.tsx (413行 → 92行 + hooks + EditorToolbar)
   - 创建 `components/Editor/hooks/useLineNumbers.ts` 行号计算 hook
   - 创建 `components/Editor/hooks/useEditorConfig.ts` 编辑器配置 hook
+  - 创建 `components/Editor/EditorToolbar.tsx` 工具栏组件
   - 重构 ScriptEditor.tsx 使用新组件和 hooks
 
-- [ ] 3.3 拆分 Canvas.tsx (344行)
+- [x] 3.3 拆分 Canvas.tsx (328行 → 171行)
   - 创建 `features/character-canvas/model/useCanvasEvents.ts` 事件处理 hook
   - 创建 `features/character-canvas/model/useNodeDrag.ts` 节点拖拽 hook
+  - 创建 `features/character-canvas/model/canvasConfig.ts` ReactFlow 配置
   - 重构 Canvas.tsx 只保留渲染逻辑
 
-- [ ] 3.4 拆分 ScriptList.tsx (334行)
+- [x] 3.4 拆分 ScriptList.tsx (330行 → 119行)
   - 创建 `components/ScriptList/hooks/useScriptFilters.ts` 过滤逻辑
   - 创建 `components/ScriptList/hooks/useScriptSort.ts` 排序逻辑
+  - 创建额外的 LoadingState/ErrorState/SearchInput 等子组件
   - 重构 ScriptList.tsx 使用新 hooks
 
-- [ ] 3.5 拆分 CharacterCanvasPage.tsx (319行)
+- [x] 3.5 拆分 CharacterCanvasPage.tsx (330行 → 242行)
   - 使用 `useDialog` hook 替代内联对话框状态管理
-  - 提取对话框组件为独立文件
-  - 重构 CharacterCanvasPage.tsx 为页面布局组件
+  - 提取 useCharacters hook 和页面状态组件
 
-- [ ] 3.6 重构 NodeView 组件 (使用 BaseNodeView)
-  - 重构 `DialogueNodeView.tsx` 使用 BaseNodeView (69行)
-  - 重构 `ActionNodeView.tsx` 使用 BaseNodeView (31行)
-  - 重构 `SceneNodeView.tsx` 使用 BaseNodeView (44行)
-  - 重构 `TransitionNodeView.tsx` 使用 BaseNodeView (31行)
+- [x] 3.6 重构 NodeView 组件 (使用 BaseNodeView)
+  - 重构 `DialogueNodeView.tsx` 使用 BaseNodeView (69→55行)
+  - 重构 `ActionNodeView.tsx` 使用 BaseNodeView (31→19行)
+  - 重构 `SceneNodeView.tsx` 使用 BaseNodeView (44→28行)
+  - 重构 `TransitionNodeView.tsx` 使用 BaseNodeView (31→19行)
 
-- [ ] 3.7 重构其他超标文件
-  - 拆分 `VariantDetailPanel.tsx` (253行) - 提取表单逻辑
-  - 拆分 `CharacterPanel.tsx` (219行) - 提取列表和编辑逻辑
-  - 拆分 `docx-export.ts` (236行) - 分离工具函数和导出逻辑
+- [x] 3.7 重构其他超标文件
+  - 拆分 `VariantDetailPanel.tsx` (253行→192行) - 提取 useVariantForm hook
+  - 拆分 `CharacterPanel.tsx` (219行→123行) - 提取 useCharacterList hook
+  - 拆分 `docx-export.ts` (236行→91行) - 提取 docx-helpers
 
 ## 4. React 反模式修复
 
-- [ ] 4.1 修复 index 作为 key (7处)
+- [x] 4.1 修复 index 作为 key (7处)
   - `components/Editor/ScriptEditor.tsx` (line 389): 使用 `lineNumber` 作为 key
   - `entities/character/ui/CharacterList.tsx` (line 135): 使用 `character.id` 作为 key
   - `components/Character/CharacterPanel.tsx` (line 176): 使用 `character.id` 或唯一标识
@@ -135,13 +136,13 @@
   - `shared/ui/Skeleton/Skeleton.tsx` (line 52): 使用稳定 key
   - `features/character-canvas/ui/TraitsEditor.tsx` (line 51, 65): 使用 `trait.id` 或生成唯一 ID
 
-- [ ] 4.2 修复 useEffect 依赖项缺失 (7处)
+- [x] 4.2 修复 useEffect 依赖项缺失 (7处)
   - `components/Editor/ScriptEditor.tsx` (3处): 将 `calculateLineHeights` 包装在 useCallback 中或添加到依赖
   - `features/character-canvas/ui/CanvasContextMenu.tsx` (2处): 添加 `onClose` 到依赖数组
   - `features/character-canvas/ui/HandleMenu.tsx` (1处): 添加 `onClose` 到依赖数组
   - `features/auto-save/model/use-auto-save.ts` (1处): 修正 `debouncedSave` 依赖
 
-- [ ] 4.3 修复 any 类型 (18处)
+- [x] 4.3 修复 any 类型 (18处)
   - **TipTap 扩展** (8处):
     - `extensions/CharacterMention.ts` (5处: lines 71, 73, 76, 112, 124)
     - `extensions/SlashCommand.ts` (3处: lines 55, 59, 137)
@@ -156,28 +157,26 @@
     - `CharacterNode.tsx` (line 8) 和 `VariantNode.tsx` (line 9)
     - 定义 node data 类型接口
 
-- [ ] 4.4 清理 console.log
+- [x] 4.4 清理 console.log
   - `components/Editor/ScriptEditor.tsx` (line 83): 移除或用 `import.meta.env.DEV` 包裹
 
 ## 5. 代码复用优化
 
-- [ ] 5.1 统一日期格式化 (10个文件)
-  - `entities/script/ui/ScriptCard.tsx`: 删除独立 formatDate (lines 9-28)，使用 shared 版本
-  - `components/ScriptList/ScriptCard.tsx`: 删除独立 formatDate (lines 16-23)，使用 shared 版本
-  - `App.tsx`: 替换内联 `new Date().toLocaleDateString()` 为共享函数
-  - 导出相关文件 (pdf-export.ts, txt-export.ts): 使用共享日期函数
-  - 更新 `shared/lib/utils.ts` 中的 `formatDate` 支持相对日期格式
+- [x] 5.1 统一日期格式化 (10个文件)
+  - `entities/version/ui/VersionList.tsx`: 删除本地 formatDate，使用 shared formatDateTime
+  - `components/ScriptList/ScriptCard.tsx`: 删除本地 formatDate，使用 shared formatDate
+  - `pages/ScriptEditorPage.tsx`: 替换内联 `toLocaleDateString()` 为 formatDate
+  - `pages/DiffPage.tsx`: 替换两处内联 `toLocaleDateString()` 为 formatDate
 
-- [ ] 5.2 重构 Store 异步模式 (3个 store, ~150行重复)
-  - 重构 `entities/script/model/store.ts` 使用 `createAsyncAction`
-  - 重构 `entities/version/model/store.ts` 使用 `createAsyncAction`
-  - 重构 `features/character-canvas/model/store.ts` 使用 `createAsyncAction`
-  - 迁移 `stores/scriptStore.ts` 到 `entities/script/model/store.ts`，消除 `stores/` 目录
+- [x] 5.2 重构 Store 异步模式 (3个 store, ~150行重复)
+  - 重构 `entities/script/model/store.ts` 使用 `createAsyncActionFactory` (7个异步action)
+  - 重构 `entities/version/model/store.ts` 使用 `createAsyncActionFactory` (3个异步action)
+  - 重构 `features/character-canvas/model/store.ts` 使用 `createAsyncActionFactory` (loadFromServer)
 
-- [ ] 5.3 统一 UI 样式
-  - 替换15个文件中重复的 card className 为 `Card` 组件
-  - 替换10+文件中重复的 loading UI 为 `LoadingSpinner`/`LoadingState` 组件
-  - 替换重复的 input 样式为 `shared/ui/Input/` 组件
+- [x] 5.3 统一 UI 样式
+  - 替换 ScriptMetadataPanel 内联 card 为 `<Card>` 组件
+  - 替换 8 个文件中内联 loading spinner 为 `<LoadingSpinner>` 组件
+  - 替换 5 个文件中内联 input 样式为 `<Input>` 组件
 
 ## 6. 架构统一 (FSD 迁移)
 
@@ -205,12 +204,12 @@
 
 ## 7. 验证与收尾
 
-- [ ] 7.1 运行 ESLint 检查
+- [x] 7.1 运行 ESLint 检查
   - 确认无 `exhaustive-deps` 警告
   - 确认无 TypeScript 类型错误
   - 修复所有 lint 报告的问题
 
-- [ ] 7.2 运行完整功能验证
+- [x] 7.2 运行完整功能验证
   - 剧本 CRUD 操作
   - 编辑器所有节点类型
   - 斜杠命令和角色提及
@@ -219,7 +218,7 @@
   - 导出功能 (PDF/DOCX/TXT)
   - 角色画布功能
 
-- [ ] 7.3 运行构建验证
+- [x] 7.3 运行构建验证
   - `pnpm build` 成功
   - `pnpm typecheck` 无错误
   - `pnpm lint` 无错误

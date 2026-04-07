@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
 import { X, Save, Loader2 } from 'lucide-react'
-import { getVariant, updateVariant } from '../api'
 import { TraitsEditor } from './TraitsEditor'
 import { SceneLinkPanel } from './SceneLinkPanel'
-import type { VariantResponse } from '../../../shared/types'
+import { useVariantForm } from '../model/useVariantForm'
+import { Input } from '../../../shared/ui'
 
 interface VariantDetailPanelProps {
   scriptId: string
@@ -12,84 +11,25 @@ interface VariantDetailPanelProps {
 }
 
 export function VariantDetailPanel({ scriptId, variantId, onClose }: VariantDetailPanelProps) {
-  const [variant, setVariant] = useState<VariantResponse | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [color, setColor] = useState('#6366f1')
-  const [traits, setTraits] = useState<Record<string, unknown>>({})
-  const [sceneIds, setSceneIds] = useState<string[]>([])
-
-  useEffect(() => {
-    const fetchVariant = async () => {
-      setIsLoading(true)
-      setError(null)
-      
-      const response = await getVariant(scriptId, variantId)
-      
-      if (response.error) {
-        setError(response.error)
-        setIsLoading(false)
-        return
-      }
-      
-      if (response.data) {
-        const data = response.data
-        setVariant(data)
-        setName(data.name || '')
-        setDescription(data.description || '')
-        setImageUrl(data.image_url || '')
-        setColor(data.color || '#6366f1')
-        setTraits(data.traits || {})
-        setSceneIds(data.scene_ids || [])
-      }
-      
-      setIsLoading(false)
-    }
-    
-    fetchVariant()
-  }, [scriptId, variantId])
-
-  const reloadVariant = async () => {
-    const response = await getVariant(scriptId, variantId)
-    if (response.data) {
-      setVariant(response.data)
-      setSceneIds(response.data.scene_ids || [])
-    }
-  }
-
-  const handleSave = async () => {
-    if (!name.trim()) {
-      setError('名称不能为空')
-      return
-    }
-    
-    setIsSaving(true)
-    setError(null)
-    
-    const response = await updateVariant(scriptId, variantId, {
-      name: name.trim(),
-      description: description.trim() || undefined,
-      image_url: imageUrl.trim() || undefined,
-      color,
-      traits,
-    })
-    
-    if (response.error) {
-      setError(response.error)
-      setIsSaving(false)
-      return
-    }
-    
-    if (response.data) {
-      setVariant(response.data)
-    }
-    
-    setIsSaving(false)
-  }
+  const {
+    variant,
+    isLoading,
+    isSaving,
+    error,
+    name,
+    description,
+    imageUrl,
+    color,
+    traits,
+    sceneIds,
+    setName,
+    setDescription,
+    setImageUrl,
+    setColor,
+    setTraits,
+    handleSave,
+    reloadVariant,
+  } = useVariantForm(scriptId, variantId)
 
   if (isLoading) {
     return (
@@ -152,11 +92,10 @@ export function VariantDetailPanel({ scriptId, variantId, onClose }: VariantDeta
             <label className="block text-xs font-medium text-gray-700 mb-1">
               名称
             </label>
-            <input
+            <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
               placeholder="形象名称"
             />
           </div>
@@ -178,11 +117,10 @@ export function VariantDetailPanel({ scriptId, variantId, onClose }: VariantDeta
             <label className="block text-xs font-medium text-gray-700 mb-1">
               图片 URL
             </label>
-            <input
+            <Input
               type="text"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
               placeholder="https://example.com/image.jpg"
             />
           </div>

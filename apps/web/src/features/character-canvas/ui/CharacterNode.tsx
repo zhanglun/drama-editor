@@ -2,9 +2,13 @@ import { Position, type NodeProps } from '@xyflow/react'
 import { CustomHandle } from './CustomHandle'
 import type { CharacterNodeData } from '../../../shared/types'
 
+type RenderedCharacterNodeData = CharacterNodeData & {
+  onHandleInteraction?: (interaction: { mode: 'click' | 'drag'; position: { x: number; y: number } }) => void
+}
+
 export function CharacterNode({ data, selected }: NodeProps) {
   const nodeData = data as unknown as CharacterNodeData
-  const onHandleInteraction = (nodeData as any).onHandleInteraction
+  const { onHandleInteraction } = nodeData as RenderedCharacterNodeData
 
   return (
     <div

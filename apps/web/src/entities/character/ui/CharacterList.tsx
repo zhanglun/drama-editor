@@ -132,7 +132,7 @@ export function CharacterList() {
         ) : (
           <ul className="divide-y divide-gray-200">
             {characters.map((character: string, index: number) => (
-              <li key={index} className="px-4 py-3 hover:bg-gray-50">
+              <li key={character} className="px-4 py-3 hover:bg-gray-50">
                 {editingId === index ? (
                   <div className="flex gap-2">
                     <input

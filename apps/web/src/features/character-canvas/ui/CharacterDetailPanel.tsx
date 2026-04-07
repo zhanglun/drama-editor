@@ -4,6 +4,7 @@ import { useCanvasStore } from '../model/store'
 import { useNodeOperations } from '../model/useNodeOperations'
 import { TraitsEditor } from './TraitsEditor'
 import type { CharacterNodeData } from '../../../shared/types'
+import { Input } from '../../../shared/ui'
 
 interface CharacterDetailPanelProps {
   scriptId: string
@@ -99,11 +100,10 @@ export function CharacterDetailPanel({ scriptId, characterId, onClose }: Charact
             <label className="block text-xs font-medium text-gray-700 mb-1">
               名称
             </label>
-            <input
+            <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
               placeholder="角色名称"
             />
           </div>
@@ -125,11 +125,10 @@ export function CharacterDetailPanel({ scriptId, characterId, onClose }: Charact
             <label className="block text-xs font-medium text-gray-700 mb-1">
               头像 URL
             </label>
-            <input
+            <Input
               type="text"
               value={avatarUrl}
               onChange={(e) => setAvatarUrl(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
               placeholder="https://example.com/avatar.jpg"
             />
           </div>

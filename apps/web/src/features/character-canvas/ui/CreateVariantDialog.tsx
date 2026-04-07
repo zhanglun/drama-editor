@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '../../../shared/ui/Dialog/Dialog'
+import { Input } from '../../../shared/ui'
 
 interface CreateVariantDialogProps {
   open: boolean
@@ -27,7 +28,9 @@ export function CreateVariantDialog({
   open,
   onClose,
   onSubmit,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   characterId: _characterId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   parentVariantId: _parentVariantId,
   parentName = '角色',
 }: CreateVariantDialogProps) {
@@ -103,12 +106,11 @@ export function CreateVariantDialog({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 名称 <span className="text-red-500">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="形象名称"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
                 disabled={isSubmitting}
                 autoFocus
               />
@@ -132,12 +134,11 @@ export function CreateVariantDialog({
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 图片 URL
               </label>
-              <input
+              <Input
                 type="text"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="https://example.com/image.jpg"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
                 disabled={isSubmitting}
               />
             </div>

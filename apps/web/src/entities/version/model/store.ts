@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { ScriptVersion } from '../../../shared/types'
 import * as api from '../api'
+import { createAsyncActionFactory } from '../../../shared/lib/create-async-action'
 
 interface VersionStore {
   versions: ScriptVersion[]
@@ -20,68 +21,59 @@ interface VersionStore {
 export const useVersionStore = create<VersionStore>()(
   devtools(
     persist(
-      (set) => ({
-        versions: [],
-        currentVersion: null,
-        isLoading: false,
-        error: null,
+      (set, get) => {
+        const action = createAsyncActionFactory<VersionStore>(set)
 
-        fetchVersions: async (scriptId: string) => {
-          set({ isLoading: true, error: null })
-          try {
-            const response = await api.getVersions(scriptId)
-            if (response.error) {
-              throw new Error(response.error)
-            }
-            const versions = response.data.sort((a, b) =>
-              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            )
-            set({ versions, isLoading: false })
-          } catch (error) {
-            set({ error: (error as Error).message, isLoading: false })
-          }
-        },
+        return {
+          versions: [],
+          currentVersion: null,
+          isLoading: false,
+          error: null,
 
-        createVersion: async (scriptId: string, content: ScriptVersion['content'], changeSummary?: string) => {
-          set({ isLoading: true, error: null })
-          try {
-            const version = await api.createVersion(scriptId, content, changeSummary)
-            set((state) => ({
-              versions: [...state.versions, version],
+          fetchVersions: (scriptId: string) => action(
+            async () => {
+              const response = await api.getVersions(scriptId)
+              if (response.error) throw new Error(response.error)
+              return response.data.sort((a, b) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )
+            },
+            (versions) => ({ versions, isLoading: false }),
+            false,
+          ) as Promise<void>,
+
+          createVersion: (scriptId: string, content: ScriptVersion['content'], changeSummary?: string) => action(
+            async () => {
+              const version = await api.createVersion(scriptId, content, changeSummary)
+              return version
+            },
+            (version) => ({
+              versions: [...get().versions, version],
               currentVersion: version,
               isLoading: false,
-            }))
-            return version
-          } catch (error) {
-            set({ error: (error as Error).message, isLoading: false })
-            throw error
-          }
-        },
+            }),
+          ) as Promise<ScriptVersion>,
 
-        deleteVersion: async (scriptId: string, versionId: string): Promise<void> => {
-          set({ isLoading: true, error: null })
-          try {
-            const response = await api.deleteVersion(scriptId, versionId)
-            if (response.error) {
-              throw new Error(response.error)
-            }
-            set((state) => ({
-              versions: state.versions.filter((v) => v.id !== versionId),
-              currentVersion: state.currentVersion?.id === versionId
+          deleteVersion: (scriptId: string, versionId: string) => action(
+            async () => {
+              const response = await api.deleteVersion(scriptId, versionId)
+              if (response.error) throw new Error(response.error)
+              return versionId
+            },
+            (deletedId) => ({
+              versions: get().versions.filter((v) => v.id !== deletedId),
+              currentVersion: get().currentVersion?.id === deletedId
                 ? null
-                : state.currentVersion,
+                : get().currentVersion,
               isLoading: false,
-            }))
-          } catch (error) {
-            set({ error: (error as Error).message, isLoading: false })
-            throw error
-          }
-        },
+            }),
+          ) as Promise<void>,
 
-        setCurrentVersion: (version) => set({ currentVersion: version }),
-        setLoading: (loading) => set({ isLoading: loading }),
-        setError: (error) => set({ error }),
-      }),
+          setCurrentVersion: (version) => set({ currentVersion: version }),
+          setLoading: (loading) => set({ isLoading: loading }),
+          setError: (error) => set({ error }),
+        }
+      },
       { name: 'version-store' }
     ),
     { name: 'version-storage' }

@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '../../../shared/ui/Dialog/Dialog'
+import { Input } from '../../../shared/ui'
 
 interface CreateCharacterDialogProps {
   open: boolean
@@ -84,11 +85,10 @@ export function CreateCharacterDialog({ open, onClose, onSubmit }: CreateCharact
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 名称 <span className="text-red-500">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="输入角色名称"
                 disabled={isSubmitting}
               />
@@ -112,11 +112,10 @@ export function CreateCharacterDialog({ open, onClose, onSubmit }: CreateCharact
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 头像 URL
               </label>
-              <input
+              <Input
                 type="text"
                 value={avatarUrl}
                 onChange={(e) => setAvatarUrl(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="https://example.com/avatar.jpg"
                 disabled={isSubmitting}
               />

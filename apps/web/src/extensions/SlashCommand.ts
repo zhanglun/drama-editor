@@ -1,6 +1,6 @@
 import { Extension } from '@tiptap/core'
 import { ReactRenderer } from '@tiptap/react'
-import Suggestion from '@tiptap/suggestion'
+import Suggestion, { type SuggestionProps } from '@tiptap/suggestion'
 import tippy, { Instance } from 'tippy.js'
 import { SlashMenu } from './SlashMenu'
 import { PluginKey } from '@tiptap/pm/state'
@@ -52,11 +52,11 @@ export const SlashCommand = Extension.create({
           )
         },
         render: () => {
-          let component: any = null
+          let component: ReactRenderer | null = null
           let popup: Instance | null = null
 
           return {
-            onStart: (props: any) => {
+            onStart: (props: SuggestionProps<SlashMenuItem>) => {
               component = new ReactRenderer(SlashMenu, {
                 props: {
                   items: defaultItems,
@@ -124,7 +124,7 @@ export const SlashCommand = Extension.create({
               })
 
               popup = tippy(document.body, {
-                getReferenceClientRect: props.clientRect,
+                getReferenceClientRect: props.clientRect as () => DOMRect,
                 appendTo: () => document.body,
                 content: component.element,
                 showOnCreate: true,
@@ -134,7 +134,7 @@ export const SlashCommand = Extension.create({
               })
             },
 
-            onUpdate: (props: any) => {
+            onUpdate: (props: SuggestionProps<SlashMenuItem>) => {
               component?.updateProps({
                 items: props.items,
               })
@@ -142,7 +142,7 @@ export const SlashCommand = Extension.create({
               if (!popup) return
 
               popup.setProps({
-                getReferenceClientRect: props.clientRect,
+                getReferenceClientRect: props.clientRect as () => DOMRect,
               })
             },
 

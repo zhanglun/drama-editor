@@ -2,10 +2,14 @@ import { Position, type NodeProps } from '@xyflow/react'
 import { CustomHandle } from './CustomHandle'
 import type { VariantNodeData } from '../../../shared/types'
 
+type RenderedVariantNodeData = VariantNodeData & {
+  onHandleInteraction?: (interaction: { mode: 'click' | 'drag'; position: { x: number; y: number } }) => void
+}
+
 export function VariantNode({ data, selected }: NodeProps) {
   const nodeData = data as unknown as VariantNodeData
   const traitEntries = Object.entries(nodeData.traits || {}).slice(0, 3)
-  const onHandleInteraction = (nodeData as any).onHandleInteraction
+  const { onHandleInteraction } = nodeData as RenderedVariantNodeData
 
   return (
     <div

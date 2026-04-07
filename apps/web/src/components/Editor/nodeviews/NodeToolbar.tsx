@@ -21,7 +21,7 @@ export function NodeToolbar({ editor, getPos, onDelete }: NodeToolbarProps) {
     const nodeSize = $pos.nodeAfter?.nodeSize || 0
     if (!nodeSize) return
 
-    let prevNodePos = pos - 1
+    const prevNodePos = pos - 1
     if (prevNodePos <= 0) return
 
     const $prevPos = state.doc.resolve(prevNodePos)

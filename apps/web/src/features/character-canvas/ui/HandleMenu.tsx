@@ -12,7 +12,7 @@ interface HandleMenuProps {
   onClose: () => void
 }
 
-export function HandleMenu({ x, y, nodeId, nodeType, mode, onSelect, onClose }: HandleMenuProps) {
+export function HandleMenu({ x, y, mode, onSelect, onClose }: HandleMenuProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [isEntering, setIsEntering] = useState(false)
 

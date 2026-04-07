@@ -16,6 +16,7 @@ import type {
   CanvasState,
 } from '../../../shared/types'
 import { listVariants, getCanvasState, saveCanvasState } from '../api'
+import { createAsyncActionFactory } from '../../../shared/lib/create-async-action'
 
 type CanvasNode = Node<CharacterNodeData> | Node<VariantNodeData>
 
@@ -127,134 +128,139 @@ function buildCanvasNodes(
 
 export const useCanvasStore = create<CanvasStore>()(
   devtools(
-    (set, get) => ({
-      ...initialState,
+    (set, get) => {
+      const action = createAsyncActionFactory<CanvasStore>(set, 'loading')
 
-      loadFromServer: async (scriptId: string, characters: Character[]) => {
-        set({ loading: true, error: null })
-        try {
-          const [variantsRes, canvasRes] = await Promise.all([
-            listVariants(scriptId),
-            getCanvasState(scriptId),
-          ])
+      return {
+        ...initialState,
 
-          if (variantsRes.error) throw new Error(variantsRes.error)
-          if (canvasRes.error) throw new Error(canvasRes.error)
+        loadFromServer: (scriptId: string, characters: Character[]) => action(
+          async () => {
+            const [variantsRes, canvasRes] = await Promise.all([
+              listVariants(scriptId),
+              getCanvasState(scriptId),
+            ])
 
-          const variants = (variantsRes.data || []) as VariantResponse[]
-          const canvasState = canvasRes.data as CanvasState | null
+            if (variantsRes.error) throw new Error(variantsRes.error)
+            if (canvasRes.error) throw new Error(canvasRes.error)
 
-          const savedPositions = new Map<string, { x: number; y: number }>()
-          if (canvasState?.nodes) {
-            for (const n of canvasState.nodes) {
-              savedPositions.set(n.id, n.position)
+            const variants = (variantsRes.data || []) as VariantResponse[]
+            const canvasState = canvasRes.data as CanvasState | null
+
+            const savedPositions = new Map<string, { x: number; y: number }>()
+            if (canvasState?.nodes) {
+              for (const n of canvasState.nodes) {
+                savedPositions.set(n.id, n.position)
+              }
             }
-          }
 
-          const { nodes, edges } = buildCanvasNodes(characters, variants, savedPositions)
-          set({
-            scriptId,
-            nodes,
-            edges,
-            loading: false,
-            isDirty: false,
-          })
-        } catch (err) {
-          set({ error: (err as Error).message, loading: false })
-        }
-      },
+            return { scriptId, characters, variants, savedPositions }
+          },
+          ({ scriptId, characters, variants, savedPositions }) => {
+            const { nodes, edges } = buildCanvasNodes(characters, variants, savedPositions)
+            return {
+              scriptId,
+              nodes,
+              edges,
+              loading: false,
+              isDirty: false,
+            }
+          },
+          false,
+        ) as Promise<void>,
 
-      reset: () => set(initialState),
+        reset: () => set(initialState),
 
-      onNodesChange: (changes) => {
-        set((state) => ({
-          nodes: applyNodeChanges(changes, state.nodes),
-          isDirty: true,
-        }))
-      },
-
-      onEdgesChange: (changes) => {
-        set((state) => ({
-          edges: applyEdgeChanges(changes, state.edges),
-          isDirty: true,
-        }))
-      },
-
-      setNodes: (nodesOrFn) => {
-        set((state) => ({
-          nodes: typeof nodesOrFn === 'function' ? nodesOrFn(state.nodes) : nodesOrFn,
-          isDirty: true,
-        }))
-      },
-
-      setEdges: (edgesOrFn) => {
-        set((state) => ({
-          edges: typeof edgesOrFn === 'function' ? edgesOrFn(state.edges) : edgesOrFn,
-          isDirty: true,
-        }))
-      },
-
-      addNode: (node) => {
-        set((state) => ({
-          nodes: [...state.nodes, node],
-          isDirty: true,
-        }))
-      },
-
-      updateNodeData: (id, data) => {
-        set((state) => ({
-          nodes: state.nodes.map((n) =>
-            n.id === id ? { ...n, data: { ...n.data, ...data } as CharacterNodeData & VariantNodeData } : n,
-          ),
-          isDirty: true,
-        }))
-      },
-
-      removeNode: (id) => {
-        set((state) => ({
-          nodes: state.nodes.filter((n) => n.id !== id),
-          edges: state.edges.filter((e) => e.source !== id && e.target !== id),
-          isDirty: true,
-        }))
-      },
-
-      addEdge: (edge) => {
-        set((state) => ({
-          edges: [...state.edges, edge],
-          isDirty: true,
-        }))
-      },
-
-      removeEdge: (id) => {
-        set((state) => ({
-          edges: state.edges.filter((e) => e.id !== id),
-          isDirty: true,
-        }))
-      },
-
-      syncToServer: async () => {
-        const { scriptId, nodes, isSaving } = get()
-        if (!scriptId || isSaving) return
-
-        set({ isSaving: true })
-        try {
-          const canvasNodes = nodes.map((n) => ({
-            id: n.id,
-            type: n.type as 'character' | 'variant',
-            position: { x: n.position.x, y: n.position.y },
+        onNodesChange: (changes) => {
+          set((state) => ({
+            nodes: applyNodeChanges(changes, state.nodes),
+            isDirty: true,
           }))
+        },
 
-          await saveCanvasState(scriptId, {
-            nodes: canvasNodes,
-            viewport: { x: 0, y: 0, zoom: 1 },
-          })
+        onEdgesChange: (changes) => {
+          set((state) => ({
+            edges: applyEdgeChanges(changes, state.edges),
+            isDirty: true,
+          }))
+        },
 
-          set({ isSaving: false, isDirty: false })
-        } catch (err) {
-          set({ isSaving: false, error: (err as Error).message })
-        }
-      },
-    }),
+        setNodes: (nodesOrFn) => {
+          set((state) => ({
+            nodes: typeof nodesOrFn === 'function' ? nodesOrFn(state.nodes) : nodesOrFn,
+            isDirty: true,
+          }))
+        },
+
+        setEdges: (edgesOrFn) => {
+          set((state) => ({
+            edges: typeof edgesOrFn === 'function' ? edgesOrFn(state.edges) : edgesOrFn,
+            isDirty: true,
+          }))
+        },
+
+        addNode: (node) => {
+          set((state) => ({
+            nodes: [...state.nodes, node],
+            isDirty: true,
+          }))
+        },
+
+        updateNodeData: (id, data) => {
+          set((state) => ({
+            nodes: state.nodes.map((n) =>
+              n.id === id ? { ...n, data: { ...n.data, ...data } as CharacterNodeData & VariantNodeData } : n,
+            ),
+            isDirty: true,
+          }))
+        },
+
+        removeNode: (id) => {
+          set((state) => ({
+            nodes: state.nodes.filter((n) => n.id !== id),
+            edges: state.edges.filter((e) => e.source !== id && e.target !== id),
+            isDirty: true,
+          }))
+        },
+
+        addEdge: (edge) => {
+          set((state) => ({
+            edges: [...state.edges, edge],
+            isDirty: true,
+          }))
+        },
+
+        removeEdge: (id) => {
+          set((state) => ({
+            edges: state.edges.filter((e) => e.id !== id),
+            isDirty: true,
+          }))
+        },
+
+        syncToServer: async () => {
+          const { scriptId, nodes, isSaving } = get()
+          if (!scriptId || isSaving) return
+
+          set({ isSaving: true })
+          try {
+            const canvasNodes = nodes.map((n) => ({
+              id: n.id,
+              type: n.type as 'character' | 'variant',
+              position: { x: n.position.x, y: n.position.y },
+            }))
+
+            await saveCanvasState(scriptId, {
+              nodes: canvasNodes,
+              viewport: { x: 0, y: 0, zoom: 1 },
+            })
+
+            set({ isSaving: false, isDirty: false })
+          } catch (err) {
+            set({ isSaving: false, error: (err as Error).message })
+          }
+        },
+      }
+    },
     { name: 'canvas-store' },
   ),
 )

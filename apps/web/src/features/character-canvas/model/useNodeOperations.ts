@@ -3,8 +3,6 @@ import type { CharacterNodeData, VariantNodeData, CreateVariantRequest, CreateCh
 import { createVariant, deleteVariant, updateVariant, createCharacter, updateCharacter } from '../api'
 import type { Node } from '@xyflow/react'
 
-type CanvasNode = Node<CharacterNodeData> | Node<VariantNodeData>
-
 export function useNodeOperations(scriptId: string | null) {
   const { addNode, removeNode, updateNodeData, addEdge, removeEdge, setNodes } = useCanvasStore()
 

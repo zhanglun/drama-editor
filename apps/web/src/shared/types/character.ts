@@ -73,6 +73,7 @@ export interface UpdateCharacterRequest {
 }
 
 export interface CharacterNodeData {
+  [key: string]: unknown
   type: 'character'
   characterId: string
   name: string
@@ -84,6 +85,7 @@ export interface CharacterNodeData {
 }
 
 export interface VariantNodeData {
+  [key: string]: unknown
   type: 'variant'
   variantId: string
   characterId: string

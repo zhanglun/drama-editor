@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Script } from '../../types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../shared/ui'
 import { useScriptStore } from '../../stores/scriptStore'
+import { formatDate } from '../../shared/lib/utils'
 
 interface ScriptCardProps {
   script: Script
@@ -12,15 +13,6 @@ export function ScriptCard({ script, onClick }: ScriptCardProps) {
   const { deleteScript } = useScriptStore()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  const formatDate = (date: string | Date) => {
-    const d = typeof date === 'string' ? new Date(date) : date
-    return d.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
 
   const getPreview = () => {
     if (!script.content?.content || script.content.content.length === 0) {

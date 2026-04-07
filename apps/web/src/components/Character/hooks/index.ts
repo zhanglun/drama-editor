@@ -1,0 +1,1 @@
+export { useCharacterList } from './useCharacterList'

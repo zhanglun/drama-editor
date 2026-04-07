@@ -2,17 +2,8 @@ import { useEffect } from 'react'
 import { useVersionStore } from '../model/store'
 import type { ScriptVersion } from '../../../shared/types'
 import { VersionBadge } from './VersionBadge'
-
-function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+import { formatDateTime } from '../../../shared/lib/utils'
+import { LoadingSpinner } from '../../../shared/ui/Loading/LoadingSpinner'
 
 interface VersionListProps {
   scriptId: string
@@ -31,7 +22,7 @@ export function VersionList({ scriptId, onSelectVersion }: VersionListProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
-        <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-indigo-600 border-r-transparent" />
+        <LoadingSpinner size="sm" />
       </div>
     )
   }
@@ -66,7 +57,7 @@ export function VersionList({ scriptId, onSelectVersion }: VersionListProps) {
           <div className="flex items-center gap-2">
             <VersionBadge version={version.version_number} />
               <span className="text-sm text-gray-500">
-                {formatDate(version.created_at)}
+                {formatDateTime(version.created_at)}
               </span>
           </div>
           {version.change_summary && (

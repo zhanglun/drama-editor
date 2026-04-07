@@ -38,6 +38,24 @@ export function useAutoSave({
 
   const previousContentRef = useRef<string>(JSON.stringify(content))
 
+  const enabledRef = useRef(enabled)
+  const scriptIdRef = useRef(scriptId)
+  const contentRef = useRef(content)
+  const isDirtyRef = useRef(state.isDirty)
+  const onSaveStartRef = useRef(onSaveStart)
+  const onSaveSuccessRef = useRef(onSaveSuccess)
+  const onSaveErrorRef = useRef(onSaveError)
+
+  useEffect(() => {
+    enabledRef.current = enabled
+    scriptIdRef.current = scriptId
+    contentRef.current = content
+    isDirtyRef.current = state.isDirty
+    onSaveStartRef.current = onSaveStart
+    onSaveSuccessRef.current = onSaveSuccess
+    onSaveErrorRef.current = onSaveError
+  }, [enabled, scriptId, content, state.isDirty, onSaveStart, onSaveSuccess, onSaveError])
+
   useEffect(() => {
     const currentContent = JSON.stringify(content)
     if (currentContent !== previousContentRef.current) {
@@ -48,27 +66,27 @@ export function useAutoSave({
 
   const debouncedSave = useRef(
     debounce(async () => {
-      if (!enabled || !state.isDirty) return
+      if (!enabledRef.current || !isDirtyRef.current) return
 
       setState(prev => ({ ...prev, isSaving: true, error: null }))
-      onSaveStart?.()
+      onSaveStartRef.current?.()
 
       try {
-        await saveQueue.enqueue(scriptId, content)
+        await saveQueue.enqueue(scriptIdRef.current, contentRef.current)
         setState(prev => ({
           ...prev,
           isSaving: false,
           isDirty: false,
           lastSavedAt: new Date(),
         }))
-        onSaveSuccess?.()
+        onSaveSuccessRef.current?.()
       } catch (error) {
         setState(prev => ({
           ...prev,
           isSaving: false,
           error: error as Error,
         }))
-        onSaveError?.(error as Error)
+        onSaveErrorRef.current?.(error as Error)
       }
     }, debounceMs)
   ).current
@@ -77,7 +95,7 @@ export function useAutoSave({
     if (enabled && state.isDirty) {
       debouncedSave()
     }
-  }, [content, enabled, state.isDirty, debouncedSave])
+  }, [enabled, state.isDirty, debouncedSave])
 
   const forceSave = useCallback(async () => {
     if (!enabled) return

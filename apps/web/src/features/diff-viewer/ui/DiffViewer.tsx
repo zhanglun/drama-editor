@@ -107,7 +107,7 @@ export function DiffViewer({
             const isCurrentDiff =
               diffIndices[currentDiffIndex] === index
             return (
-              <div key={index} ref={isCurrentDiff ? currentLineRef : undefined}>
+              <div key={`${line.type}-${line.lineNumber?.old ?? 'a'}-${line.lineNumber?.new ?? 'r'}`} ref={isCurrentDiff ? currentLineRef : undefined}>
                 <DiffLine line={line} isActive={isCurrentDiff} />
               </div>
             )

@@ -1,2 +1,8 @@
 export * from './editor'
 export * from './dashboard'
+export { HomePage } from './HomePage'
+export { ScriptsPage } from './ScriptsPage'
+export { NewScriptPage } from './NewScriptPage'
+export { ScriptEditorPage } from './ScriptEditorPage'
+export { VersionsPage } from './VersionsPage'
+export { DiffPage } from './DiffPage'

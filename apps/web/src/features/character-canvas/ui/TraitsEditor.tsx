@@ -11,7 +11,7 @@ export function TraitsEditor({ traits, onChange, readOnly = false }: TraitsEdito
 
   const handleKeyChange = (index: number, newKey: string) => {
     const newEntries = [...entries]
-    const [_, value] = newEntries[index]
+    const [, value] = newEntries[index]
     newEntries[index] = [newKey, value]
     updateTraits(newEntries)
   }
@@ -62,7 +62,7 @@ export function TraitsEditor({ traits, onChange, readOnly = false }: TraitsEdito
   return (
     <div className="space-y-2">
       {entries.map(([key, value], index) => (
-        <div key={index} className="flex gap-2 items-center">
+        <div key={key || `new-trait-${index}`} className="flex gap-2 items-center">
           <input
             type="text"
             value={key}

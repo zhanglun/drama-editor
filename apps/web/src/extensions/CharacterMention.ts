@@ -1,9 +1,10 @@
-import { Extension } from '@tiptap/core'
+import { Extension, Editor } from '@tiptap/core'
 import { ReactRenderer } from '@tiptap/react'
-import Suggestion from '@tiptap/suggestion'
+import Suggestion, { type SuggestionProps } from '@tiptap/suggestion'
 import tippy, { Instance } from 'tippy.js'
 import { MentionList } from './MentionList'
 import { PluginKey } from '@tiptap/pm/state'
+import type { EditorView } from '@tiptap/pm/view'
 import 'tippy.js/dist/tippy.css'
 
 interface MentionItem {
@@ -68,12 +69,12 @@ export const CharacterMention = Extension.create<CharacterMentionOptions>({
             }))
         },
         render: () => {
-          let component: any = null
+          let component: ReactRenderer | null = null
           let popup: Instance | null = null
-          let editorRef: any = null
+          let editorRef: Editor | null = null
 
           return {
-            onStart: (props: any) => {
+            onStart: (props: SuggestionProps<MentionItem>) => {
               editorRef = props.editor
               component = new ReactRenderer(MentionList, {
                 props: {
@@ -99,7 +100,7 @@ export const CharacterMention = Extension.create<CharacterMentionOptions>({
               })
 
               popup = tippy(document.body, {
-                getReferenceClientRect: props.clientRect,
+                getReferenceClientRect: props.clientRect as () => DOMRect,
                 appendTo: () => document.body,
                 content: component.element,
                 showOnCreate: true,
@@ -109,7 +110,7 @@ export const CharacterMention = Extension.create<CharacterMentionOptions>({
               })
             },
 
-            onUpdate: (props: any) => {
+            onUpdate: (props: SuggestionProps<MentionItem>) => {
               component?.updateProps({
                 items: props.items,
               })
@@ -117,11 +118,11 @@ export const CharacterMention = Extension.create<CharacterMentionOptions>({
               if (!popup) return
 
               popup.setProps({
-                getReferenceClientRect: props.clientRect,
+                getReferenceClientRect: props.clientRect as () => DOMRect,
               })
             },
 
-            onKeyDown: (props: { event: KeyboardEvent; view: any; range: any }) => {
+            onKeyDown: (props: { event: KeyboardEvent; view: EditorView; range: { from: number; to: number } }) => {
               if (props.event.key === 'Escape') {
                 popup?.hide()
                 return true
