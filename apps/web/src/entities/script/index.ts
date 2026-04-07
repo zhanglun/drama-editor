@@ -6,11 +6,10 @@ export type { ScriptStore } from './model'
 export type { Script, ScriptContent, ScriptMetadata } from '../../shared/types/script'
 
 // API
-export { getScripts, getScript } from './api/get-scripts'
+export { getScripts } from './api/get-scripts'
 export { getScript as getScriptById } from './api/get-script'
 export { createScript } from './api/create-script'
-export { updateScript } from './api/update-script'
-export { patchScript } from './api/patch-script'
+export { updateScript, patchScript } from './api/update-script'
 export { deleteScript } from './api/delete-script'
 export { duplicateScript } from './api/duplicate-script'
 

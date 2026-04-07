@@ -46,7 +46,11 @@ export const useScriptStore = create<ScriptStore>()(
         createScript: async (title: string) => {
           set({ isLoading: true, error: null })
           try {
-            const script = await api.createScript(title)
+            const response = await api.createScript({ title })
+            if (response.error) {
+              throw new Error(response.error)
+            }
+            const script = response.data
             set((state) => ({ 
               scripts: [...state.scripts, script],
               currentScript: script,
@@ -62,7 +66,7 @@ export const useScriptStore = create<ScriptStore>()(
         updateScript: async (id: string, content: ScriptContent) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await api.updateScript(id, content)
+            const response = await api.updateScript(id, { content })
             if (response.error) {
               throw new Error(response.error)
             }

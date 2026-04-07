@@ -1,7 +1,8 @@
 export { useScriptStore, useCurrentScript, useScripts, useIsLoading, useError, useScriptById } from './script'
-export type { Script, ScriptContent, ScriptStore } from './script'
+export type { Script, ScriptContent } from './script'
 export { ScriptCard, ScriptTitle } from './script'
-export { getScripts, getScript, createScript, updateScript, patchScript, deleteScript, duplicateScript } from './script'
+export { getScripts, getScriptById } from './script'
+export { createScript, updateScript, patchScript, deleteScript, duplicateScript } from './script'
 
 export { useCharacterStore, useCharacters } from './character'
 export type { Character } from './character'

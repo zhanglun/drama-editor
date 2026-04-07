@@ -1,5 +1,5 @@
 import { apiClient } from '../../../shared/api'
-import type { Script, ScriptContent, ApiResponse } from '../../../shared/types'
+import type { Script, ApiResponse } from '../../../shared/types'
 
 export async function updateScript(
   id: string,

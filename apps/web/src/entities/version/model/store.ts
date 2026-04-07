@@ -44,8 +44,9 @@ export const useVersionStore = create<VersionStore>()(
 
           createVersion: (scriptId: string, content: ScriptVersion['content'], changeSummary?: string) => action(
             async () => {
-              const version = await api.createVersion(scriptId, content, changeSummary)
-              return version
+              const response = await api.createVersion(scriptId, content, changeSummary)
+              if (response.error) throw new Error(response.error)
+              return response.data
             },
             (version) => ({
               versions: [...get().versions, version],

@@ -9,6 +9,7 @@ import {
   MarkerType,
   type Connection,
   type Node,
+  type OnNodesChange,
   useReactFlow,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -21,7 +22,8 @@ import { VariantNode } from './VariantNode'
 import { CanvasToolbar } from './CanvasToolbar'
 import { CanvasContextMenu } from './CanvasContextMenu'
 import { HandleMenu } from './HandleMenu'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { CustomEdge } from './CustomEdge'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { LoadingSpinner } from '../../../shared/ui/Loading/LoadingSpinner'
 
 const nodeTypes = {
@@ -29,11 +31,15 @@ const nodeTypes = {
   variant: VariantNode,
 }
 
+const edgeTypes = {
+  custom: CustomEdge,
+}
+
 const defaultEdgeOptions = {
-  type: 'bezier',
+  type: 'custom',
   animated: false,
-  style: { strokeWidth: 2, stroke: '#94a3b8', fill: 'none' },
-  markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#94a3b8' },
+  style: { strokeWidth: 1.5, stroke: '#94a3b8', fill: 'none' },
+  markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color: '#94a3b8' },
   pathOptions: { curvature: 0.25 },
 }
 
@@ -150,6 +156,15 @@ function CanvasInner({
     },
   })) as Node[]
 
+  const edgesWithSelection = useMemo(() => edges.map((edge) => ({
+    ...edge,
+    data: {
+      ...edge.data,
+      sourceSelected: selectedNodeId === edge.source,
+      targetSelected: selectedNodeId === edge.target,
+    },
+  })), [edges, selectedNodeId])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' && selectedNodeId) handleDeleteNode(selectedNodeId)
@@ -181,12 +196,13 @@ function CanvasInner({
   return (
     <div className="h-full w-full relative" ref={reactFlowWrapper}>
       <ReactFlow
-        nodes={nodesWithCallbacks} edges={edges}
-        onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
+        nodes={nodesWithCallbacks} edges={edgesWithSelection}
+        onNodesChange={onNodesChange as OnNodesChange<Node>}
+        onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick} onPaneClick={handlePaneClick}
         onNodeContextMenu={handleNodeContextMenu} onPaneContextMenu={handlePaneContextMenu}
         onNodeDragStop={handleNodeDragStop} onConnect={handleConnect}
-        nodeTypes={nodeTypes} connectionMode={ConnectionMode.Loose}
+        nodeTypes={nodeTypes} edgeTypes={edgeTypes} connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={defaultEdgeOptions} fitView fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1} maxZoom={2} deleteKeyCode={null} className="bg-gray-50"
       >

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button, Input } from '../../../shared/ui'
+import { useAuth } from '../../../shared/hooks/useAuth'
 
 interface RegisterFormProps {
   onSuccess?: () => void
@@ -9,7 +10,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const { register, isLoading, error } = useAuth()
+  const { register } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

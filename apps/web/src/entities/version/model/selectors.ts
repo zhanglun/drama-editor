@@ -1,4 +1,6 @@
-export { useVersionStore } from './store'
+import { useVersionStore } from './store'
+
+export { useVersionStore }
 
 export const useVersions = () => useVersionStore((state) => state.versions)
 

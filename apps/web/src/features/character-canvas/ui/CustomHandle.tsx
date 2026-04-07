@@ -62,19 +62,21 @@ export function CustomHandle({ type, position, color, onInteraction }: CustomHan
   }
 
   return (
-    <Handle
-      type={type}
-      position={position}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onMouseDown={handleMouseDown}
-      className="!w-6 !h-6 !border-2 !border-white !rounded-full !opacity-0 group-hover:!opacity-100 !flex !items-center !justify-center"
-      style={{ 
-        backgroundColor: color,
-        [position === Position.Right ? 'right' : 'left']: '-12px'
-      }}
-    >
-      <Plus className="w-3.5 h-3.5 text-white pointer-events-none" strokeWidth={2.5} />
-    </Handle>
+    <>
+      <Handle
+        type={type}
+        position={position}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        className="!w-6 !h-6 !border-2 !border-white !rounded-full !opacity-0 group-hover:!opacity-100 !flex !items-center !justify-center"
+        style={{
+          backgroundColor: color,
+          [position === Position.Right ? 'right' : 'left']: '-12px'
+        }}
+      >
+        <Plus className="w-3.5 h-3.5 text-white pointer-events-none" strokeWidth={2.5} />
+      </Handle>
+    </>
   )
 }
