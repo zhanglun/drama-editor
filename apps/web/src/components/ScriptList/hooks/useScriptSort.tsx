@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import type { Script } from '../../../types'
+import type { Script } from '../../../shared/types'
 
 export type SortBy = 'title' | 'updated_at' | 'created_at'
 export type SortOrder = 'asc' | 'desc'

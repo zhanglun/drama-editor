@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useScriptStore } from '../../stores/scriptStore'
+import { useScriptStore } from '../../entities/script'
 import { ScriptCard } from './ScriptCard'
 import { EmptyState } from './EmptyState'
 import { CreateScriptModal } from './CreateScriptModal'

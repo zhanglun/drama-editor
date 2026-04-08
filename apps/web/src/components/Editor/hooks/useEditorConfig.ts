@@ -9,10 +9,10 @@ import OrderedList from '@tiptap/extension-ordered-list'
 import CodeBlock from '@tiptap/extension-code-block'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import ListItem from '@tiptap/extension-list-item'
-import { Scene, Dialogue, Action, Transition, SlashCommand, CharacterMention, CharacterMentionNode } from '../../../extensions'
-import { extractCharacters } from '../../../utils/characterExtractor'
-import { useScriptStore } from '../../../stores/scriptStore'
-import { ScriptContent } from '../../../types'
+import { Scene, Dialogue, Action, Transition, SlashCommand, CharacterMention, CharacterMentionNode } from '../../../features/editor/extensions'
+import { extractCharacters } from '../../../shared/lib/character-extractor'
+import { useScriptStore } from '../../../entities/script'
+import type { ScriptContent } from '../../../shared/types'
 
 interface UseEditorConfigProps {
   content?: ScriptContent

@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
-import { DialogueNodeView } from '../components/Editor/nodeviews/DialogueNodeView'
+import { DialogueNodeView } from '../../../components/Editor/nodeviews/DialogueNodeView'
 
 export interface DialogueOptions {
   HTMLAttributes: Record<string, unknown>,

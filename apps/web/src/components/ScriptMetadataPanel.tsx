@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Script } from '../types'
+import type { Script } from '../shared/types'
 import { Card, Input } from '../shared/ui'
 
 interface ScriptMetadataPanelProps {

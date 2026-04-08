@@ -1,34 +1,34 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
-import { TransitionNodeView } from '../components/Editor/nodeviews/TransitionNodeView'
+import { SceneNodeView } from '../../../components/Editor/nodeviews/SceneNodeView'
 
-export interface TransitionOptions {
+export interface SceneOptions {
   HTMLAttributes: Record<string, unknown>,
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    transition: {
-      setTransition: (attributes?: { description?: string }) => ReturnType,
-      toggleTransition: () => ReturnType,
-      insertTransition: (attributes?: { description?: string }) => ReturnType,
+    scene: {
+      setScene: (attributes?: { heading?: string }) => ReturnType,
+      toggleScene: () => ReturnType,
+      insertScene: (attributes?: { heading?: string }) => ReturnType,
     }
   }
 }
 
-export const Transition = Node.create<TransitionOptions>({
-  name: 'transition',
+export const Scene = Node.create<SceneOptions>({
+  name: 'scene',
 
   group: 'block',
 
-  content: 'text*',
+  content: 'inline*',
 
   defining: true,
 
   parseHTML() {
     return [
       {
-        tag: 'div[data-type="transition"]',
+        tag: 'div[data-type="scene"]',
       },
     ]
   },
@@ -37,34 +37,35 @@ export const Transition = Node.create<TransitionOptions>({
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
-        'data-type': 'transition',
-        class: 'transition-element',
+        'data-type': 'scene',
+        class: 'scene-heading',
       }),
       0,
     ]
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(TransitionNodeView)
+    return ReactNodeViewRenderer(SceneNodeView)
   },
 
   addCommands() {
     return {
-      setTransition:
-        () =>
+      setScene:
+        (attributes) =>
         ({ commands }) => {
-          return commands.setNode(this.name)
+          return commands.setNode(this.name, attributes)
         },
-      toggleTransition:
+      toggleScene:
         () =>
         ({ commands }) => {
           return commands.toggleNode(this.name, 'paragraph')
         },
-      insertTransition:
-        () =>
+      insertScene:
+        (attributes) =>
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
+            attrs: attributes,
           })
         },
     }
@@ -72,7 +73,7 @@ export const Transition = Node.create<TransitionOptions>({
 
   addKeyboardShortcuts() {
     return {
-      'Mod-4': () => this.editor.commands.insertTransition(),
+      'Mod-1': () => this.editor.commands.insertScene(),
     }
   },
 })

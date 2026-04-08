@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import type { Script } from '../../types'
+import type { Script } from '../../shared/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../shared/ui'
-import { useScriptStore } from '../../stores/scriptStore'
+import { useScriptStore } from '../../entities/script'
 import { formatDate } from '../../shared/lib/utils'
 
 interface ScriptCardProps {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useScriptStore } from '../stores/scriptStore'
+import { useScriptStore } from '../entities/script'
 import { useCanvasStore } from '../features/character-canvas/model/store'
 import { useNodeOperations } from '../features/character-canvas/model/useNodeOperations'
 import { Canvas } from '../features/character-canvas/ui/Canvas'

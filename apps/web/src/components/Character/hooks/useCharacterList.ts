@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useScriptStore } from '../../../stores/scriptStore'
-import type { ScriptContent, Script } from '../../../types'
-import { updateCharactersInContent, extractCharacters } from '../../../utils/characterExtractor'
+import { useScriptStore } from '../../../entities/script'
+import type { ScriptContent, Script } from '../../../shared/types'
+import { updateCharactersInContent, extractCharacters } from '../../../shared/lib/character-extractor'
 
 interface UseCharacterListReturn {
   characters: string[]

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useScriptStore } from '../stores/scriptStore'
+import { useScriptStore } from '../entities/script'
 import { LoadingSpinner } from '../shared/ui/Loading/LoadingSpinner'
 
 export function NewScriptPage() {

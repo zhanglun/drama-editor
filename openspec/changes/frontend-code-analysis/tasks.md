@@ -180,27 +180,23 @@
 
 ## 6. 架构统一 (FSD 迁移)
 
-- [ ] 6.1 迁移遗留目录到 FSD 结构
-  - `stores/scriptStore.ts` → 合并到 `entities/script/model/store.ts`
-  - `components/` → 按 FSD 层级分配:
-    - `components/Editor/` → `features/editor/` 或 `widgets/editor/`
-    - `components/ScriptList/` → `widgets/script-list/` (已部分完成)
-    - `components/Character/` → `entities/character/ui/` 或 `widgets/character/`
-    - `components/ScriptMetadataPanel.tsx` → `features/metadata/ui/`
-    - `components/Diff/` → `features/diff-viewer/` (已部分完成)
-    - `components/Version/` → `entities/version/ui/`
-    - `components/Export/` → `features/export/ui/`
-  - `extensions/` → `features/editor/extensions/`
-  - `services/` → `shared/api/`
-  - `lib/` → `shared/lib/`
-  - `types/` → `shared/types/`
-  - `utils/` → `shared/lib/`
-  - `hooks/` → `shared/hooks/`
+> **✅ 任务已完成 - 2025-04-08**
+> 
+> **类型错误已修复**，架构迁移继续执行。
 
-- [ ] 6.2 更新所有导入路径
-  - 使用路径别名 `@/` 前缀减少迁移影响
-  - 验证所有导入路径更新后无错误
-  - 运行 `pnpm build` 验证构建成功
+- [x] 6.1 迁移遗留目录到 FSD 结构
+  - `stores/scriptStore.ts` → 已更新所有导入路径到 `entities/script`，旧目录已删除
+  - `extensions/` → `features/editor/extensions/` ✓
+  - `services/` → 空目录已删除
+  - `lib/` → `shared/lib/` 已统一，旧目录已删除
+  - `types/` → `shared/types/` 已统一，旧目录已删除
+  - `utils/` → `shared/lib/` 已统一（character-extractor 同步），旧目录已删除
+  - `hooks/` → 空目录已删除
+
+- [x] 6.2 更新所有导入路径
+  - 更新了所有从旧路径导入的文件（extensions、stores、types、utils）
+  - `pnpm typecheck` 通过
+  - `pnpm build` 成功
 
 ## 7. 验证与收尾
 

@@ -1,34 +1,34 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
-import { ActionNodeView } from '../components/Editor/nodeviews/ActionNodeView'
+import { TransitionNodeView } from '../../../components/Editor/nodeviews/TransitionNodeView'
 
-export interface ActionOptions {
+export interface TransitionOptions {
   HTMLAttributes: Record<string, unknown>,
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    action: {
-      setAction: (attributes?: { description?: string }) => ReturnType,
-      toggleAction: () => ReturnType,
-      insertAction: (attributes?: { description?: string }) => ReturnType,
+    transition: {
+      setTransition: (attributes?: { description?: string }) => ReturnType,
+      toggleTransition: () => ReturnType,
+      insertTransition: (attributes?: { description?: string }) => ReturnType,
     }
   }
 }
 
-export const Action = Node.create<ActionOptions>({
-  name: 'action',
+export const Transition = Node.create<TransitionOptions>({
+  name: 'transition',
 
   group: 'block',
 
-  content: 'inline*',
+  content: 'text*',
 
   defining: true,
 
   parseHTML() {
     return [
       {
-        tag: 'div[data-type="action"]',
+        tag: 'div[data-type="transition"]',
       },
     ]
   },
@@ -37,30 +37,30 @@ export const Action = Node.create<ActionOptions>({
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
-        'data-type': 'action',
-        class: 'action-description',
+        'data-type': 'transition',
+        class: 'transition-element',
       }),
       0,
     ]
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(ActionNodeView)
+    return ReactNodeViewRenderer(TransitionNodeView)
   },
 
   addCommands() {
     return {
-      setAction:
+      setTransition:
         () =>
         ({ commands }) => {
           return commands.setNode(this.name)
         },
-      toggleAction:
+      toggleTransition:
         () =>
         ({ commands }) => {
           return commands.toggleNode(this.name, 'paragraph')
         },
-      insertAction:
+      insertTransition:
         () =>
         ({ commands }) => {
           return commands.insertContent({
@@ -72,7 +72,7 @@ export const Action = Node.create<ActionOptions>({
 
   addKeyboardShortcuts() {
     return {
-      'Mod-3': () => this.editor.commands.insertAction(),
+      'Mod-4': () => this.editor.commands.insertTransition(),
     }
   },
 })

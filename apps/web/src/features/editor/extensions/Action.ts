@@ -1,23 +1,23 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
-import { SceneNodeView } from '../components/Editor/nodeviews/SceneNodeView'
+import { ActionNodeView } from '../../../components/Editor/nodeviews/ActionNodeView'
 
-export interface SceneOptions {
+export interface ActionOptions {
   HTMLAttributes: Record<string, unknown>,
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    scene: {
-      setScene: (attributes?: { heading?: string }) => ReturnType,
-      toggleScene: () => ReturnType,
-      insertScene: (attributes?: { heading?: string }) => ReturnType,
+    action: {
+      setAction: (attributes?: { description?: string }) => ReturnType,
+      toggleAction: () => ReturnType,
+      insertAction: (attributes?: { description?: string }) => ReturnType,
     }
   }
 }
 
-export const Scene = Node.create<SceneOptions>({
-  name: 'scene',
+export const Action = Node.create<ActionOptions>({
+  name: 'action',
 
   group: 'block',
 
@@ -28,7 +28,7 @@ export const Scene = Node.create<SceneOptions>({
   parseHTML() {
     return [
       {
-        tag: 'div[data-type="scene"]',
+        tag: 'div[data-type="action"]',
       },
     ]
   },
@@ -37,35 +37,34 @@ export const Scene = Node.create<SceneOptions>({
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
-        'data-type': 'scene',
-        class: 'scene-heading',
+        'data-type': 'action',
+        class: 'action-description',
       }),
       0,
     ]
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(SceneNodeView)
+    return ReactNodeViewRenderer(ActionNodeView)
   },
 
   addCommands() {
     return {
-      setScene:
-        (attributes) =>
+      setAction:
+        () =>
         ({ commands }) => {
-          return commands.setNode(this.name, attributes)
+          return commands.setNode(this.name)
         },
-      toggleScene:
+      toggleAction:
         () =>
         ({ commands }) => {
           return commands.toggleNode(this.name, 'paragraph')
         },
-      insertScene:
-        (attributes) =>
+      insertAction:
+        () =>
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
-            attrs: attributes,
           })
         },
     }
@@ -73,7 +72,7 @@ export const Scene = Node.create<SceneOptions>({
 
   addKeyboardShortcuts() {
     return {
-      'Mod-1': () => this.editor.commands.insertScene(),
+      'Mod-3': () => this.editor.commands.insertAction(),
     }
   },
 })

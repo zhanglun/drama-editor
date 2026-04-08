@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import type { Script } from '../../../types'
+import type { Script } from '../../../shared/types'
 
 export function useScriptFilters(scripts: Script[]) {
   const [searchQuery, setSearchQuery] = useState('')

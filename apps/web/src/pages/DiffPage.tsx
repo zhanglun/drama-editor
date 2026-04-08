@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useScriptStore } from '../stores/scriptStore'
+import { useScriptStore } from '../entities/script'
 import { useVersionStore } from '../entities/version/model/store'
 import { DiffViewer } from '../features/diff-viewer/ui/DiffViewer'
-import type { ScriptVersion } from '../types'
+import type { ScriptVersion } from '../shared/types'
 import { formatDate } from '../shared/lib/utils'
 import { LoadingSpinner } from '../shared/ui/Loading/LoadingSpinner'
 

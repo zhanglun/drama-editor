@@ -1,6 +1,6 @@
 import { EditorContent } from '@tiptap/react'
 import { useState, useRef, useEffect, RefObject } from 'react'
-import { ScriptContent } from '../../types'
+import type { ScriptContent } from '../../shared/types'
 import { useLineNumbers, useEditorConfig, LineNumbersMode } from './hooks'
 import { EditorToolbar } from './EditorToolbar'
 
