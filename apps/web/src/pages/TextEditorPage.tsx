@@ -4,28 +4,26 @@ import * as Tabs from '@radix-ui/react-tabs'
 import { Upload, FileText, Pencil, Eye } from 'lucide-react'
 import mammoth from 'mammoth'
 import { ScriptPreview } from './text-editor/ScriptPreview'
+import {
+  ACTION_LINE_HIGHLIGHT_REGEX,
+  ACTION_LINE_STATS_REGEX,
+  AUDIO_EVENT_REGEX,
+  DIALOGUE_CHARACTER_HIGHLIGHT_REGEX,
+  DIALOGUE_LINE_STATS_REGEX,
+  EPISODE_HEADER_CN_REGEX,
+  EPISODE_HEADER_EN_REGEX,
+  EPISODE_HEADER_SEASON_REGEX,
+  FULLWIDTH_BRACKET_NOTE_REGEX,
+  SCENE_HEADER_HIGHLIGHT_REGEX,
+  SECTION_HEADER_REGEX,
+  SQUARE_BRACKET_NOTE_REGEX,
+  STAGE_DIRECTION_INLINE_REGEX,
+  UI_EVENT_REGEX,
+} from './text-editor/script-syntax'
 
 const WORD_REGEX = /[\u4e00-\u9fff]|[a-zA-Z]+/g
-const DIALOGUE_LINE_REGEX = /^[^\n：:]+[：:](.+)$/gm
-const ACTION_LINE_REGEX = /^▲(.+)$/gm
 const WHITESPACE_REGEX = /\s/g
 const CHARS_PER_MINUTE = 500
-const AUDIO_EVENT_LABELS = ['音效', 'BGM', '环境音'] as const
-const UI_EVENT_LABELS = ['系统提示', '弹幕', '界面操作', '提示条', '礼物特效'] as const
-
-function escapeRegexLiteral(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-function createBracketEventRegex(labels: readonly string[]): RegExp {
-  const labelPattern = labels.map(escapeRegexLiteral).join('|')
-  return new RegExp(`^\\[(?:${labelPattern})[：:].*\\]$`)
-}
-
-const AUDIO_EVENT_REGEX = createBracketEventRegex(AUDIO_EVENT_LABELS)
-const UI_EVENT_REGEX = createBracketEventRegex(UI_EVENT_LABELS)
-const SQUARE_BRACKET_NOTE_REGEX = /^\[[^\]]*\]$/
-const FULLWIDTH_BRACKET_NOTE_REGEX = /^【[^】]*】$/
 
 function countWords(text: string): number {
   const matches = text.match(WORD_REGEX)
@@ -38,22 +36,22 @@ function countCharsNoWhitespace(text: string): number {
 
 function countDialogue(text: string): number {
   let total = 0
-  DIALOGUE_LINE_REGEX.lastIndex = 0
-  let match = DIALOGUE_LINE_REGEX.exec(text)
+  DIALOGUE_LINE_STATS_REGEX.lastIndex = 0
+  let match = DIALOGUE_LINE_STATS_REGEX.exec(text)
   while (match !== null) {
     total += countWords(match[1])
-    match = DIALOGUE_LINE_REGEX.exec(text)
+    match = DIALOGUE_LINE_STATS_REGEX.exec(text)
   }
   return total
 }
 
 function countAction(text: string): number {
   let total = 0
-  ACTION_LINE_REGEX.lastIndex = 0
-  let match = ACTION_LINE_REGEX.exec(text)
+  ACTION_LINE_STATS_REGEX.lastIndex = 0
+  let match = ACTION_LINE_STATS_REGEX.exec(text)
   while (match !== null) {
     total += countWords(match[1])
-    match = ACTION_LINE_REGEX.exec(text)
+    match = ACTION_LINE_STATS_REGEX.exec(text)
   }
   return total
 }
@@ -98,23 +96,23 @@ export function TextEditorPage() {
       unicode: true,
       tokenizer: {
         root: [
-          [/^[[【(（<《]?\s*第\s*[零〇一二三四五六七八九十百千万0-9]+\s*[集回话章卷篇部节幕].*$/, 'episode-header'],
-          [/^\s*(?:EPISODE|EP|E)\.?\s*[0-9IVXLCDM]+\s*[\]】)）>》]?.*$/i, 'episode-header'],
-          [/^\s*S[0-9]{1,2}E[0-9]{1,3}.*$/i, 'episode-header'],
+          [EPISODE_HEADER_CN_REGEX, 'episode-header'],
+          [EPISODE_HEADER_EN_REGEX, 'episode-header'],
+          [EPISODE_HEADER_SEASON_REGEX, 'episode-header'],
 
-          [/^\s*(?:[一二三四五六七八九十0-9]+[、.．]\s*)?(?:梗概|故事大纲|大纲|人物小传|人物介绍|角色介绍|主要人物|人物设定)\s*[：:]?\s*$/, 'section-header'],
+          [SECTION_HEADER_REGEX, 'section-header'],
 
-          [/^\s*[0-9]{1,4}\s*[-－—./]\s*[0-9]{1,4}[A-Za-z]?\s+.*/, 'scene-header'],
+          [SCENE_HEADER_HIGHLIGHT_REGEX, 'scene-header'],
 
-          [/^▲.*/, 'action'],
+          [ACTION_LINE_HIGHLIGHT_REGEX, 'action'],
 
           [AUDIO_EVENT_REGEX, 'audio-event'],
           [UI_EVENT_REGEX, 'ui-event'],
           [SQUARE_BRACKET_NOTE_REGEX, 'bracket-note'],
           [FULLWIDTH_BRACKET_NOTE_REGEX, 'bracket-note'],
-          [/[（(][^）)]*[）)]/, 'stage-direction'],
+          [STAGE_DIRECTION_INLINE_REGEX, 'stage-direction'],
 
-          [/^[^【\[\s：:]+(?=[：:])/, 'character'],
+          [DIALOGUE_CHARACTER_HIGHLIGHT_REGEX, 'character'],
         ],
       },
     })

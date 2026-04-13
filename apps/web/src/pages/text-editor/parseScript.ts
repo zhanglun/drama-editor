@@ -1,3 +1,12 @@
+import {
+  ACTION_LINE_PARSE_REGEX,
+  AUDIO_EVENT_REGEX,
+  CHARACTERS_LINE_REGEX,
+  DIALOGUE_LINE_PARSE_REGEX,
+  SCENE_HEADER_PARSE_REGEX,
+  UI_EVENT_REGEX,
+} from './script-syntax'
+
 export interface Scene {
   id: string
   number: string
@@ -11,13 +20,9 @@ export interface Scene {
 export type ScriptBlock =
   | { type: 'dialogue'; character: string; stageDirection: string; text: string }
   | { type: 'action'; text: string }
-  | { type: 'soundEffect'; text: string }
+  | { type: 'audioEvent'; label: string; text: string }
+  | { type: 'uiEvent'; label: string; text: string }
 
-const SCENE_HEADER_REGEX = /^(\d+-\d+)\s+(晨|早|上午|中午|午|下午|傍晚|晚|夜|凌晨|深夜|白天)\s+(内|外|内外|内景|外景)\s+(.+)$/
-const CHARACTERS_REGEX = /^出场人物[：:]\s*(.+)$/
-const SOUND_EFFECT_REGEX = /^\[音效[：:](.+)\]$/
-const ACTION_REGEX = /^▲\s*(.+)$/
-const DIALOGUE_REGEX = /^([^\s：:]+)[：:]\s*(?:[（(]([^）)]+)[）)])?\s*(.*)$/
 const BLANK_LINE_REGEX = /^\s*$/
 
 export function parseScript(text: string): Scene[] {
@@ -32,7 +37,7 @@ export function parseScript(text: string): Scene[] {
 
     if (BLANK_LINE_REGEX.test(trimmed)) continue
 
-    const sceneMatch = trimmed.match(SCENE_HEADER_REGEX)
+    const sceneMatch = trimmed.match(SCENE_HEADER_PARSE_REGEX)
     if (sceneMatch) {
       sceneCounter++
       currentScene = {
@@ -62,25 +67,39 @@ export function parseScript(text: string): Scene[] {
       scenes.push(currentScene)
     }
 
-    const charactersMatch = trimmed.match(CHARACTERS_REGEX)
+    const charactersMatch = trimmed.match(CHARACTERS_LINE_REGEX)
     if (charactersMatch) {
       currentScene.characters = charactersMatch[1].split(/[、,，]/).map(s => s.trim()).filter(Boolean)
       continue
     }
 
-    const soundMatch = trimmed.match(SOUND_EFFECT_REGEX)
-    if (soundMatch) {
-      currentScene.blocks.push({ type: 'soundEffect', text: soundMatch[1].trim() })
+    const audioEventMatch = trimmed.match(AUDIO_EVENT_REGEX)
+    if (audioEventMatch) {
+      currentScene.blocks.push({
+        type: 'audioEvent',
+        label: audioEventMatch[1].trim(),
+        text: audioEventMatch[2].trim(),
+      })
       continue
     }
 
-    const actionMatch = trimmed.match(ACTION_REGEX)
+    const uiEventMatch = trimmed.match(UI_EVENT_REGEX)
+    if (uiEventMatch) {
+      currentScene.blocks.push({
+        type: 'uiEvent',
+        label: uiEventMatch[1].trim(),
+        text: uiEventMatch[2].trim(),
+      })
+      continue
+    }
+
+    const actionMatch = trimmed.match(ACTION_LINE_PARSE_REGEX)
     if (actionMatch) {
       currentScene.blocks.push({ type: 'action', text: actionMatch[1].trim() })
       continue
     }
 
-    const dialogueMatch = trimmed.match(DIALOGUE_REGEX)
+    const dialogueMatch = trimmed.match(DIALOGUE_LINE_PARSE_REGEX)
     if (dialogueMatch && dialogueMatch[1].length <= 20) {
       currentScene.blocks.push({
         type: 'dialogue',

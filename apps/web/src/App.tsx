@@ -6,6 +6,7 @@ import { NewScriptPage } from './pages/NewScriptPage'
 import { ScriptEditorPage } from './pages/ScriptEditorPage'
 import { VersionsPage } from './pages/VersionsPage'
 import { DiffPage } from './pages/DiffPage'
+import { TextEditorPage } from './pages/TextEditorPage'
 
 function App() {
   return (
@@ -31,6 +32,12 @@ function App() {
                   >
                     新建剧本
                   </Link>
+                  <Link
+                    to="/text-editor"
+                    className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    文本编辑
+                  </Link>
                 </nav>
               </div>
             </div>
@@ -46,6 +53,7 @@ function App() {
             <Route path="/scripts/:id/versions" element={<VersionsPage />} />
             <Route path="/scripts/:id/versions/:versionId/diff" element={<DiffPage />} />
             <Route path="/scripts/:id/characters/canvas" element={<CharacterCanvasPage />} />
+            <Route path="/text-editor" element={<TextEditorPage />} />
           </Routes>
         </main>
       </div>

@@ -34,13 +34,24 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
     )
   }
 
-  if (block.type === 'soundEffect') {
+  if (block.type === 'audioEvent') {
     return (
       <div className="flex items-start py-2 px-4 bg-purple-50 border-l-4 border-purple-300 rounded-r-md">
         <span className="inline-flex items-center px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded mr-3 shrink-0">
-          音效
+          {block.label}
         </span>
         <span className="text-purple-800 text-sm italic flex-1">{block.text}</span>
+      </div>
+    )
+  }
+
+  if (block.type === 'uiEvent') {
+    return (
+      <div className="flex items-start py-2 px-4 bg-pink-50 border-l-4 border-pink-300 rounded-r-md">
+        <span className="inline-flex items-center px-2 py-0.5 bg-pink-100 text-pink-700 text-xs font-medium rounded mr-3 shrink-0">
+          {block.label}
+        </span>
+        <span className="text-pink-800 text-sm italic flex-1">{block.text}</span>
       </div>
     )
   }
