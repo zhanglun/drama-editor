@@ -47,6 +47,12 @@ Accepted behavior:
 - directory click reveals the corresponding episode in the editor
 - preview also scrolls to the matching location
 
+Later refinement:
+
+- preview navigation should prefer exact rendered anchors, not only approximate scene matching
+- large preview jumps should avoid very long smooth-scroll animations
+- editor episode navigation should align the target line near the top edge instead of centering it
+
 ### 3. Empty state in the edit tab is business-specific
 
 The latest design requires a business-related upload component in the edit tab empty state.
@@ -66,6 +72,10 @@ The module was restructured into three layers.
 ### `model/`
 
 Headless state and parsing.
+
+Later parsing refinement:
+
+- parsed `ScriptBlock` items now carry source `line` numbers for exact reveal behavior in preview
 
 Key exports:
 
@@ -155,6 +165,30 @@ Used for:
 - summary display
 - episode-level counts
 
+Shared navigation contract:
+
+- `EpisodeSegment.startLine` is the reveal target shared by editor and preview
+- preview should first try to locate an exact rendered block with the matching line
+- only fall back to scene-level anchors when an exact block anchor is unavailable
+
+## Reveal Behavior Decisions
+
+### Preview
+
+- rendered blocks expose `data-script-line`
+- rendered scene cards expose `data-scene-line` as fallback anchors
+- exact block anchor scroll is preferred over scene approximation
+- short-distance jumps may remain smooth
+- large-distance jumps should switch to direct scrolling
+- relative scroll position must be computed against the preview scroller, not naive `offsetTop`
+
+### Editor
+
+- Monaco default centering behavior was rejected for episode navigation
+- `revealLineInCenter` and `revealLineNearTop` did not match the intended UX closely enough
+- editor reveal now uses explicit `setScrollTop(...)` based on `getTopForLineNumber(...)`
+- editor top padding must be accounted for in the computed scroll target
+
 ## Props Drilling Decision
 
 We noted that props drilling is currently manageable but likely to grow.
@@ -212,6 +246,13 @@ This keeps the module flexible for both:
 - `TextEditorPage.tsx`
 - `README.md`
 
+### Updated during later navigation refinement
+
+- `model/parseScript.ts`
+- `parseScript.test.ts`
+- `ui/primitives/ScriptPreview.tsx`
+- `ui/primitives/MonacoScriptEditor.tsx`
+
 ## Current Implementation Status
 
 Implemented:
@@ -220,6 +261,9 @@ Implemented:
 - episode directory derived from the full text
 - editor reveal-line navigation
 - preview reveal-line navigation
+- preview exact-anchor navigation using parsed block line numbers
+- adaptive preview scrolling for near vs long-distance jumps
+- editor top-aligned reveal using manual scroll position control
 - edit/preview tab shell
 - `ScriptEditPanel` with configurable empty-state strategy
 - default business import empty state placeholder
@@ -231,6 +275,11 @@ Verified during session:
 - `pnpm --filter @drama-editor/web typecheck`
 - `pnpm --filter @drama-editor/web build`
 - `pnpm --filter @drama-editor/web test -- src/pages/text-editor/parseScript.test.ts src/pages/text-editor/script-syntax/patterns.test.ts`
+
+Additional verification during later navigation fixes:
+
+- `pnpm --filter @drama-editor/web typecheck`
+- `pnpm --filter @drama-editor/web test -- src/pages/text-editor/parseScript.test.ts`
 
 ## Recommended Next Steps
 
@@ -244,6 +293,8 @@ Verified during session:
 1. Add visual highlighting for the currently selected episode region in editor and preview
 2. Evolve `ScriptWorkspaceShell` to support a generic `tabs` API if more tabs are planned
 3. Add tests around empty-state strategies in `ScriptEditPanel`
+4. Add UI-level tests for episode navigation behavior in both editor and preview
+5. Consider centralizing reveal-scroll strategy so editor and preview stay behaviorally aligned
 
 ## How To Resume Later
 
@@ -257,5 +308,7 @@ If resuming this work later, start from these files:
 - [TextEditorPage.tsx](/Users/zhanglun/Documents/mine/drama-editor/apps/web/src/pages/TextEditorPage.tsx)
 
 Recommended short prompt for future continuation:
+
+- Continue from the latest `text-editor` navigation refinements. Keep full-script editing as the single source of truth, preserve episode directory as navigation only, and maintain exact preview anchoring plus top-aligned editor reveal behavior.
 
 > Continue the `text-editor` workspace work from `CONVERSATION_CONTEXT.md`, keeping full-script editing, episode navigation, and configurable edit-tab empty-state strategy.
