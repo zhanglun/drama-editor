@@ -21,6 +21,7 @@ export interface Scene {
   location: string
   characters: string[]
   blocks: ScriptBlock[]
+  startLine: number
 }
 
 export type ScriptBlock =
@@ -40,7 +41,7 @@ export function parseScript(text: string): Scene[] {
   let currentScene: Scene | null = null
   let sceneCounter = 0
 
-  function ensureScene(): Scene {
+  function ensureScene(startLine: number): Scene {
     if (currentScene) return currentScene
 
     sceneCounter++
@@ -52,14 +53,16 @@ export function parseScript(text: string): Scene[] {
       location: '',
       characters: [],
       blocks: [],
+      startLine,
     }
     scenes.push(currentScene)
     return currentScene
   }
 
-  for (const rawLine of lines) {
+  for (const [lineIndex, rawLine] of lines.entries()) {
     const line = rawLine.trimEnd()
     const trimmed = line.trim()
+    const startLine = lineIndex + 1
 
     if (BLANK_LINE_REGEX.test(trimmed)) continue
 
@@ -74,6 +77,7 @@ export function parseScript(text: string): Scene[] {
         location: sceneMatch[4].trim(),
         characters: [],
         blocks: [],
+        startLine,
       }
       scenes.push(currentScene)
       continue
@@ -84,16 +88,16 @@ export function parseScript(text: string): Scene[] {
       || EPISODE_HEADER_EN_REGEX.test(trimmed)
       || EPISODE_HEADER_SEASON_REGEX.test(trimmed)
     ) {
-      ensureScene().blocks.push({ type: 'episodeHeader', text: trimmed })
+      ensureScene(startLine).blocks.push({ type: 'episodeHeader', text: trimmed })
       continue
     }
 
     if (SECTION_HEADER_REGEX.test(trimmed)) {
-      ensureScene().blocks.push({ type: 'sectionHeader', text: trimmed })
+      ensureScene(startLine).blocks.push({ type: 'sectionHeader', text: trimmed })
       continue
     }
 
-    const activeScene = ensureScene()
+    const activeScene = ensureScene(startLine)
 
     const charactersMatch = trimmed.match(CHARACTERS_LINE_REGEX)
     if (charactersMatch) {

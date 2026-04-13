@@ -1,9 +1,11 @@
-import { useMemo } from 'react'
+import { createRef, useEffect, useMemo } from 'react'
 import type { Scene, ScriptBlock } from './parseScript'
 import { parseScript } from './parseScript'
 
 interface ScriptPreviewProps {
   content: string
+  className?: string
+  revealLine?: number
 }
 
 function BlockRenderer({ block }: { block: ScriptBlock }) {
@@ -141,8 +143,24 @@ function SceneCard({ scene }: { scene: Scene }) {
   )
 }
 
-export function ScriptPreview({ content }: ScriptPreviewProps) {
+export function ScriptPreview({ content, className, revealLine }: ScriptPreviewProps) {
   const scenes = useMemo(() => parseScript(content), [content])
+  const sceneRefs = useMemo(
+    () => scenes.map(() => createRef<HTMLDivElement>()),
+    [scenes],
+  )
+
+  useEffect(() => {
+    if (!revealLine || scenes.length === 0) return
+
+    const targetIndex = scenes.findIndex((scene) => scene.startLine >= revealLine)
+    const resolvedIndex = targetIndex >= 0 ? targetIndex : 0
+
+    sceneRefs[resolvedIndex]?.current?.scrollIntoView({
+      block: 'start',
+      behavior: 'smooth',
+    })
+  }, [revealLine, sceneRefs, scenes])
 
   if (!content.trim()) {
     return (
@@ -161,9 +179,11 @@ export function ScriptPreview({ content }: ScriptPreviewProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-4 space-y-6 overflow-y-auto h-full">
-      {scenes.map(scene => (
-        <SceneCard key={scene.id} scene={scene} />
+    <div className={className ?? 'max-w-3xl mx-auto py-6 px-4 space-y-6 overflow-y-auto h-full'}>
+      {scenes.map((scene, index) => (
+        <div key={scene.id} ref={sceneRefs[index]}>
+          <SceneCard scene={scene} />
+        </div>
       ))}
     </div>
   )

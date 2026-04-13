@@ -1,0 +1,6 @@
+export { ScriptPreview } from './ScriptPreview'
+export { useTextEditorWorkspace } from './model/useTextEditorWorkspace'
+export { EpisodeSidebar } from './ui/EpisodeSidebar'
+export { MonacoScriptEditor } from './ui/MonacoScriptEditor'
+export { ScriptWorkspaceHeader } from './ui/ScriptWorkspaceHeader'
+export { ScriptWorkspaceShell } from './ui/ScriptWorkspaceShell'
