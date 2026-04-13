@@ -16,6 +16,12 @@ It is designed around three goals:
 
 The editor always works with the complete screenplay text. Episode selection is navigation only and must not split the editor content.
 
+Episode navigation uses a shared line-based contract:
+
+- `EpisodeSegment.startLine` is the reveal target
+- editor and preview both consume that line-based navigation input
+- preview should prefer exact rendered anchors before scene-level approximation
+
 ### Headless State, Styled UI
 
 State management and parsing live in `model/*`. UI components consume those capabilities but are not the source of truth.
@@ -169,6 +175,15 @@ interface Scene {
 
 This is the preview rendering model.
 
+### ScriptBlock
+
+Produced inside `parseScript`.
+
+Important detail:
+
+- each parsed block carries its source `line`
+- preview uses that line value to create exact reveal anchors
+
 ## Controller Contract
 
 `useScriptWorkspaceController()` is the default headless state entry point.
@@ -212,6 +227,7 @@ Responsibilities:
 - render Monaco
 - register screenplay highlighting
 - reveal a target line in the full document
+- align episode navigation near the top edge of the editor viewport
 
 Non-responsibilities:
 
@@ -225,7 +241,14 @@ Responsibilities:
 
 - parse script text into `Scene[]`
 - render structured preview cards
-- reveal the nearest scene for a target line
+- reveal the exact rendered block for a target line when possible
+- fall back to the nearest earlier scene anchor when no exact block anchor exists
+
+Interaction refinement:
+
+- short-distance jumps may remain smooth
+- large-distance jumps should avoid long smooth-scroll animations
+- scroll calculations must be relative to the preview scroller itself
 
 ### EpisodeDirectory
 
@@ -294,6 +317,39 @@ Best for simple pages and local clarity.
 Best for a full workspace tree with many internal consumers.
 
 `ScriptWorkspaceContext` is optional by design. Consumers are not required to use context if they prefer headless composition.
+
+## Reveal Strategy
+
+### Shared Reveal Input
+
+The workspace shares one reveal signal across editor and preview:
+
+- `activeEpisode?.startLine`
+
+This keeps episode navigation consistent without splitting the underlying content.
+
+### Preview Reveal Strategy
+
+Preferred order:
+
+1. exact rendered block anchor via parsed block `line`
+2. nearest earlier scene anchor
+
+Rationale:
+
+- episode headers are not always equivalent to scene starts
+- scene-only reveal is too approximate for reliable episode navigation
+
+### Editor Reveal Strategy
+
+Rejected options:
+
+- center-aligned reveal via Monaco defaults
+- loosely top-biased reveal that still preserves significant offset
+
+Accepted option:
+
+- explicit scroll positioning using Monaco line metrics so the target line appears near the top edge
 
 ## Extension Guidance
 

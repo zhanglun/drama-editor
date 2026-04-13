@@ -71,7 +71,7 @@ headless 状态与解析层，不依赖具体 UI。
 - `episode-directory.ts`
   把完整剧本文本切成 `EpisodeSegment[]`，供目录导航、滚动定位和统计使用。
 - `parseScript.ts`
-  把纯文本解析为 `Scene[]`，供预览渲染使用。
+  把纯文本解析为 `Scene[]`，供预览渲染使用；解析出的 block 还会保留源 `line` 信息，供精确定位使用。
 - `script-stats.ts`
   提供字数、去空格字符数、阅读时长等统计。
 - `ScriptWorkspaceContext.tsx`
@@ -82,9 +82,9 @@ headless 状态与解析层，不依赖具体 UI。
 可单独复用的基础组件，尽量不带业务流程。
 
 - `MonacoScriptEditor.tsx`
-  纯编辑器 primitive，只负责完整剧本文本的编辑、高亮和定位。
+  纯编辑器 primitive，只负责完整剧本文本的编辑、高亮和定位。当前 episode 导航会把目标行尽量对齐到编辑区域顶部。
 - `ScriptPreview.tsx`
-  纯预览 primitive，只负责解析文本并渲染预览卡片。
+  纯预览 primitive，只负责解析文本并渲染预览卡片。当前会优先按精确行锚点定位，再回退到场次级定位。
 - `EpisodeDirectory.tsx`
   纯目录 primitive，只负责展示目录和触发导航。
 - `monaco-theme.ts`
@@ -137,6 +137,13 @@ headless 状态与解析层，不依赖具体 UI。
 - `ScriptPreview`
 
 都可以单独使用。
+
+### 5. reveal 行为优先精确定位
+
+- episode 导航统一使用 `EpisodeSegment.startLine`
+- preview 优先滚动到带对应 `line` 的渲染块
+- 只有在精确锚点不存在时才回退到场次级锚点
+- editor 不应使用“居中定位”作为 episode 导航默认行为
 
 ## 当前支持的语法类型
 
@@ -231,6 +238,12 @@ headless 状态与解析层，不依赖具体 UI。
 pnpm --filter @drama-editor/web test -- src/pages/text-editor/parseScript.test.ts src/pages/text-editor/script-syntax/patterns.test.ts
 ```
 
+导航相关改动后，建议再手动验证：
+
+1. 左侧点击当前附近集数时，preview 保持短距离平滑滚动
+2. 左侧跨很多集跳转时，preview 不出现很长的滚动动画
+3. editor 点击目录后，目标行应贴近顶部而不是居中
+
 ## 不建议做的事
 
 - 不要在 `TextEditorPage.tsx` 重新堆一套独立 regex
@@ -245,6 +258,7 @@ pnpm --filter @drama-editor/web test -- src/pages/text-editor/parseScript.test.t
 - **改工作区状态，去 `model/useScriptWorkspaceController.ts`**
 - **改目录解析，去 `model/episode-directory.ts`**
 - **改预览解析，去 `model/parseScript.ts`**
+- **改预览精确定位，优先看 `model/parseScript.ts` 和 `ui/primitives/ScriptPreview.tsx`**
 - **改纯编辑器，去 `ui/primitives/MonacoScriptEditor.tsx`**
 - **改编辑 tab 空状态，去 `ui/panels/ScriptEditPanel.tsx`**
 - **改整页布局，去 `ui/workspace/ScriptWorkspaceShell.tsx`**

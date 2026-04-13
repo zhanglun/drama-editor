@@ -16,6 +16,7 @@ Use the default workspace composition when you want:
 - full-script edit tab
 - preview tab
 - default workspace header
+- shared episode navigation across editor and preview
 
 ```tsx
 import {
@@ -273,6 +274,10 @@ Props:
 - `onChange: (value: string) => void`
 - `revealLine?: number`
 
+Behavior note:
+
+- `revealLine` is intended for navigation and should place the target line near the top of the editor viewport
+
 ### `ScriptPreview`
 
 Props:
@@ -280,6 +285,12 @@ Props:
 - `content: string`
 - `revealLine?: number`
 - `className?: string`
+
+Behavior note:
+
+- `revealLine` first tries to scroll to an exact rendered block anchor
+- when the exact anchor is unavailable, preview falls back to the nearest earlier scene anchor
+- large-distance jumps may skip smooth animation to avoid long scrolling
 
 ### `EpisodeDirectory`
 
@@ -309,6 +320,9 @@ Expected behavior:
 - the editor always shows the full script
 - the preview always renders the full script
 - selecting an episode scrolls editor and preview to the matching position
+- editor navigation should align the target line near the top edge
+- preview should prefer exact line anchors over approximate scene-only matching
+- preview may smooth-scroll for short jumps but should directly jump for very large jumps
 
 ## Testing
 
@@ -324,6 +338,7 @@ Recommended validation after changes:
 2. `build`
 3. focused text-editor tests
 4. manual navigation check in edit and preview tabs
+5. manual near-jump vs far-jump preview behavior check
 
 ## Best Practices
 
