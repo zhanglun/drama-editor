@@ -1,4 +1,4 @@
-import { FileText, ListVideo } from 'lucide-react'
+import { ListVideo } from 'lucide-react'
 import type { EpisodeSegment } from '../../model'
 
 interface EpisodeDirectoryProps {
@@ -39,20 +39,7 @@ export function EpisodeDirectory({ episodes, activeEpisodeId, onSelect }: Episod
                     : 'border-white/6 bg-white/[0.03] text-[#d7d1d4] hover:border-white/12 hover:bg-white/[0.05]'
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{episode.title}</div>
-                    <div className="mt-1 line-clamp-2 text-xs leading-5 text-[#9d9499]">
-                      {episode.summary}
-                    </div>
-                  </div>
-                  <FileText className={`mt-0.5 h-4 w-4 shrink-0 ${isActive ? 'text-[#ff82b4]' : 'text-[#73696f]'}`} />
-                </div>
-                <div className="mt-3 flex items-center gap-2 text-[11px] text-[#8b8388]">
-                  <span>{episode.sceneCount || 0} 场</span>
-                  <span>·</span>
-                  <span>{episode.wordCount} 字</span>
-                </div>
+                <div className="truncate text-sm font-medium">{episode.title}</div>
               </button>
             )
           })}

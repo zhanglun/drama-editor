@@ -1,4 +1,4 @@
-import { createRef, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { Scene, ScriptBlock } from '../../model'
 import { parseScript } from '../../model'
 
@@ -8,10 +8,32 @@ interface ScriptPreviewProps {
   revealLine?: number
 }
 
+const SMOOTH_SCROLL_SCREEN_MULTIPLIER = 1.5
+
+function scrollTargetIntoContainer(container: HTMLDivElement, target: HTMLElement) {
+  const containerRect = container.getBoundingClientRect()
+  const targetRect = target.getBoundingClientRect()
+  const targetTop = container.scrollTop + (targetRect.top - containerRect.top)
+  const scrollDistance = Math.abs(container.scrollTop - targetTop)
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const behavior: ScrollBehavior =
+    prefersReducedMotion || scrollDistance > container.clientHeight * SMOOTH_SCROLL_SCREEN_MULTIPLIER
+      ? 'auto'
+      : 'smooth'
+
+  container.scrollTo({
+    top: Math.max(targetTop, 0),
+    behavior,
+  })
+}
+
 function BlockRenderer({ block }: { block: ScriptBlock }) {
   if (block.type === 'episodeHeader') {
     return (
-      <div className="flex items-start rounded-r-md border-l-4 border-fuchsia-400 bg-fuchsia-50 px-4 py-2">
+      <div
+        data-script-line={block.line}
+        className="flex items-start rounded-r-md border-l-4 border-fuchsia-400 bg-fuchsia-50 px-4 py-2"
+      >
         <span className="mr-3 inline-flex shrink-0 items-center rounded bg-fuchsia-100 px-2 py-0.5 text-xs font-medium text-fuchsia-700">
           集头
         </span>
@@ -22,7 +44,10 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
 
   if (block.type === 'sectionHeader') {
     return (
-      <div className="flex items-start rounded-r-md border-l-4 border-cyan-400 bg-cyan-50 px-4 py-2">
+      <div
+        data-script-line={block.line}
+        className="flex items-start rounded-r-md border-l-4 border-cyan-400 bg-cyan-50 px-4 py-2"
+      >
         <span className="mr-3 inline-flex shrink-0 items-center rounded bg-cyan-100 px-2 py-0.5 text-xs font-medium text-cyan-700">
           章节
         </span>
@@ -33,7 +58,10 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
 
   if (block.type === 'dialogue') {
     return (
-      <div className="flex items-start rounded-r-md border-l-4 border-orange-400 bg-orange-50 px-4 py-2">
+      <div
+        data-script-line={block.line}
+        className="flex items-start rounded-r-md border-l-4 border-orange-400 bg-orange-50 px-4 py-2"
+      >
         <span className="mr-3 inline-flex shrink-0 items-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
           {block.character}
         </span>
@@ -49,7 +77,10 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
 
   if (block.type === 'action') {
     return (
-      <div className="flex items-start rounded-r-md border-l-4 border-gray-300 bg-gray-50 px-4 py-2">
+      <div
+        data-script-line={block.line}
+        className="flex items-start rounded-r-md border-l-4 border-gray-300 bg-gray-50 px-4 py-2"
+      >
         <span className="mr-3 inline-flex shrink-0 items-center rounded bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
           动作
         </span>
@@ -60,7 +91,10 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
 
   if (block.type === 'audioEvent') {
     return (
-      <div className="flex items-start rounded-r-md border-l-4 border-purple-300 bg-purple-50 px-4 py-2">
+      <div
+        data-script-line={block.line}
+        className="flex items-start rounded-r-md border-l-4 border-purple-300 bg-purple-50 px-4 py-2"
+      >
         <span className="mr-3 inline-flex shrink-0 items-center rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
           {block.label}
         </span>
@@ -71,7 +105,10 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
 
   if (block.type === 'uiEvent') {
     return (
-      <div className="flex items-start rounded-r-md border-l-4 border-pink-300 bg-pink-50 px-4 py-2">
+      <div
+        data-script-line={block.line}
+        className="flex items-start rounded-r-md border-l-4 border-pink-300 bg-pink-50 px-4 py-2"
+      >
         <span className="mr-3 inline-flex shrink-0 items-center rounded bg-pink-100 px-2 py-0.5 text-xs font-medium text-pink-700">
           {block.label}
         </span>
@@ -82,7 +119,10 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
 
   if (block.type === 'bracketNote') {
     return (
-      <div className="flex items-start rounded-r-md border-l-4 border-slate-300 bg-slate-50 px-4 py-2">
+      <div
+        data-script-line={block.line}
+        className="flex items-start rounded-r-md border-l-4 border-slate-300 bg-slate-50 px-4 py-2"
+      >
         <span className="mr-3 inline-flex shrink-0 items-center rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
           标记
         </span>
@@ -96,7 +136,10 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
 
 function SceneCard({ scene }: { scene: Scene }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div
+      data-scene-line={scene.startLine}
+      className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
+    >
       <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
 
       <div className="border-b border-gray-200 bg-gray-50 px-5 py-3">
@@ -143,22 +186,35 @@ function SceneCard({ scene }: { scene: Scene }) {
 
 export function ScriptPreview({ content, className, revealLine }: ScriptPreviewProps) {
   const scenes = useMemo(() => parseScript(content), [content])
-  const sceneRefs = useMemo(
-    () => scenes.map(() => createRef<HTMLDivElement>()),
-    [scenes],
-  )
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!revealLine || scenes.length === 0) return
+    const container = containerRef.current
+    if (!container || !revealLine || scenes.length === 0) return
 
-    const targetIndex = scenes.findIndex((scene) => scene.startLine >= revealLine)
-    const resolvedIndex = targetIndex >= 0 ? targetIndex : 0
+    const exactAnchor = container.querySelector<HTMLElement>(`[data-script-line="${revealLine}"]`)
 
-    sceneRefs[resolvedIndex]?.current?.scrollIntoView({
-      block: 'start',
-      behavior: 'smooth',
-    })
-  }, [revealLine, sceneRefs, scenes])
+    if (exactAnchor) {
+      scrollTargetIntoContainer(container, exactAnchor)
+      return
+    }
+
+    const sceneAnchors = Array.from(container.querySelectorAll<HTMLElement>('[data-scene-line]'))
+    const resolvedAnchor = sceneAnchors.reduce<HTMLElement | null>((closest, anchor) => {
+      const anchorLine = Number(anchor.dataset.sceneLine)
+      if (Number.isNaN(anchorLine) || anchorLine > revealLine) {
+        return closest
+      }
+
+      if (!closest) return anchor
+
+      return anchorLine > Number(closest.dataset.sceneLine) ? anchor : closest
+    }, null) ?? sceneAnchors[0]
+
+    if (resolvedAnchor) {
+      scrollTargetIntoContainer(container, resolvedAnchor)
+    }
+  }, [revealLine, scenes])
 
   if (!content.trim()) {
     return (
@@ -177,9 +233,12 @@ export function ScriptPreview({ content, className, revealLine }: ScriptPreviewP
   }
 
   return (
-    <div className={className ?? 'mx-auto h-full max-w-3xl space-y-6 overflow-y-auto px-4 py-6'}>
-      {scenes.map((scene, index) => (
-        <div key={scene.id} ref={sceneRefs[index]}>
+    <div
+      ref={containerRef}
+      className={className ?? 'mx-auto h-full max-w-3xl space-y-6 overflow-y-auto px-4 py-6'}
+    >
+      {scenes.map((scene) => (
+        <div key={scene.id}>
           <SceneCard scene={scene} />
         </div>
       ))}

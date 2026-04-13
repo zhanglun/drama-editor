@@ -25,13 +25,13 @@ export interface Scene {
 }
 
 export type ScriptBlock =
-  | { type: 'episodeHeader'; text: string }
-  | { type: 'sectionHeader'; text: string }
-  | { type: 'dialogue'; character: string; stageDirection: string; text: string }
-  | { type: 'action'; text: string }
-  | { type: 'audioEvent'; label: string; text: string }
-  | { type: 'uiEvent'; label: string; text: string }
-  | { type: 'bracketNote'; text: string }
+  | { type: 'episodeHeader'; text: string; line: number }
+  | { type: 'sectionHeader'; text: string; line: number }
+  | { type: 'dialogue'; character: string; stageDirection: string; text: string; line: number }
+  | { type: 'action'; text: string; line: number }
+  | { type: 'audioEvent'; label: string; text: string; line: number }
+  | { type: 'uiEvent'; label: string; text: string; line: number }
+  | { type: 'bracketNote'; text: string; line: number }
 
 const BLANK_LINE_REGEX = /^\s*$/
 
@@ -88,12 +88,12 @@ export function parseScript(text: string): Scene[] {
       || EPISODE_HEADER_EN_REGEX.test(trimmed)
       || EPISODE_HEADER_SEASON_REGEX.test(trimmed)
     ) {
-      ensureScene(startLine).blocks.push({ type: 'episodeHeader', text: trimmed })
+      ensureScene(startLine).blocks.push({ type: 'episodeHeader', text: trimmed, line: startLine })
       continue
     }
 
     if (SECTION_HEADER_REGEX.test(trimmed)) {
-      ensureScene(startLine).blocks.push({ type: 'sectionHeader', text: trimmed })
+      ensureScene(startLine).blocks.push({ type: 'sectionHeader', text: trimmed, line: startLine })
       continue
     }
 
@@ -111,6 +111,7 @@ export function parseScript(text: string): Scene[] {
         type: 'audioEvent',
         label: audioEventMatch[1].trim(),
         text: audioEventMatch[2].trim(),
+        line: startLine,
       })
       continue
     }
@@ -121,18 +122,19 @@ export function parseScript(text: string): Scene[] {
         type: 'uiEvent',
         label: uiEventMatch[1].trim(),
         text: uiEventMatch[2].trim(),
+        line: startLine,
       })
       continue
     }
 
     if (SQUARE_BRACKET_NOTE_REGEX.test(trimmed) || FULLWIDTH_BRACKET_NOTE_REGEX.test(trimmed)) {
-      activeScene.blocks.push({ type: 'bracketNote', text: trimmed })
+      activeScene.blocks.push({ type: 'bracketNote', text: trimmed, line: startLine })
       continue
     }
 
     const actionMatch = trimmed.match(ACTION_LINE_PARSE_REGEX)
     if (actionMatch) {
-      activeScene.blocks.push({ type: 'action', text: actionMatch[1].trim() })
+      activeScene.blocks.push({ type: 'action', text: actionMatch[1].trim(), line: startLine })
       continue
     }
 
@@ -143,11 +145,12 @@ export function parseScript(text: string): Scene[] {
         character: dialogueMatch[1].trim(),
         stageDirection: dialogueMatch[2]?.trim() ?? '',
         text: dialogueMatch[3]?.trim() ?? '',
+        line: startLine,
       })
       continue
     }
 
-    activeScene.blocks.push({ type: 'action', text: trimmed })
+    activeScene.blocks.push({ type: 'action', text: trimmed, line: startLine })
   }
 
   return scenes

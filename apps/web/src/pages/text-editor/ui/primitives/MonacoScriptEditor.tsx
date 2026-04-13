@@ -8,6 +8,8 @@ interface MonacoScriptEditorProps {
   revealLine?: number
 }
 
+const EDITOR_VERTICAL_PADDING = 20
+
 export function MonacoScriptEditor({ value, onChange, revealLine }: MonacoScriptEditorProps) {
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null)
 
@@ -22,7 +24,9 @@ export function MonacoScriptEditor({ value, onChange, revealLine }: MonacoScript
   useEffect(() => {
     if (!editorRef.current || !revealLine) return
 
-    editorRef.current.revealLineInCenter(revealLine)
+    const targetTop = Math.max(editorRef.current.getTopForLineNumber(revealLine) - EDITOR_VERTICAL_PADDING, 0)
+
+    editorRef.current.setScrollTop(targetTop)
     editorRef.current.setPosition({ lineNumber: revealLine, column: 1 })
     editorRef.current.focus()
   }, [revealLine])
@@ -44,7 +48,7 @@ export function MonacoScriptEditor({ value, onChange, revealLine }: MonacoScript
           lineNumbers: 'on',
           automaticLayout: true,
           scrollBeyondLastLine: false,
-          padding: { top: 20, bottom: 20 },
+          padding: { top: EDITOR_VERTICAL_PADDING, bottom: EDITOR_VERTICAL_PADDING },
           unicodeHighlight: { ambiguousCharacters: false, invisibleCharacters: false },
           overviewRulerBorder: false,
           lineDecorationsWidth: 12,
