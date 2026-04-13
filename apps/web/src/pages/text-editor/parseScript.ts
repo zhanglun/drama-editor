@@ -3,7 +3,9 @@ import {
   AUDIO_EVENT_REGEX,
   CHARACTERS_LINE_REGEX,
   DIALOGUE_LINE_PARSE_REGEX,
+  FULLWIDTH_BRACKET_NOTE_REGEX,
   SCENE_HEADER_PARSE_REGEX,
+  SQUARE_BRACKET_NOTE_REGEX,
   UI_EVENT_REGEX,
 } from './script-syntax'
 
@@ -22,6 +24,7 @@ export type ScriptBlock =
   | { type: 'action'; text: string }
   | { type: 'audioEvent'; label: string; text: string }
   | { type: 'uiEvent'; label: string; text: string }
+  | { type: 'bracketNote'; text: string }
 
 const BLANK_LINE_REGEX = /^\s*$/
 
@@ -90,6 +93,11 @@ export function parseScript(text: string): Scene[] {
         label: uiEventMatch[1].trim(),
         text: uiEventMatch[2].trim(),
       })
+      continue
+    }
+
+    if (SQUARE_BRACKET_NOTE_REGEX.test(trimmed) || FULLWIDTH_BRACKET_NOTE_REGEX.test(trimmed)) {
+      currentScene.blocks.push({ type: 'bracketNote', text: trimmed })
       continue
     }
 

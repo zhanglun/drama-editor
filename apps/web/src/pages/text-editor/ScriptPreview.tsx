@@ -56,6 +56,17 @@ function BlockRenderer({ block }: { block: ScriptBlock }) {
     )
   }
 
+  if (block.type === 'bracketNote') {
+    return (
+      <div className="flex items-start py-2 px-4 bg-slate-50 border-l-4 border-slate-300 rounded-r-md">
+        <span className="inline-flex items-center px-2 py-0.5 bg-slate-200 text-slate-700 text-xs font-medium rounded mr-3 shrink-0">
+          标记
+        </span>
+        <span className="text-slate-700 text-sm italic flex-1">{block.text}</span>
+      </div>
+    )
+  }
+
   return null
 }
 
