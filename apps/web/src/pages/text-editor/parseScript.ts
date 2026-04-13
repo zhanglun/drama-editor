@@ -3,8 +3,12 @@ import {
   AUDIO_EVENT_REGEX,
   CHARACTERS_LINE_REGEX,
   DIALOGUE_LINE_PARSE_REGEX,
+  EPISODE_HEADER_CN_REGEX,
+  EPISODE_HEADER_EN_REGEX,
+  EPISODE_HEADER_SEASON_REGEX,
   FULLWIDTH_BRACKET_NOTE_REGEX,
   SCENE_HEADER_PARSE_REGEX,
+  SECTION_HEADER_REGEX,
   SQUARE_BRACKET_NOTE_REGEX,
   UI_EVENT_REGEX,
 } from './script-syntax'
@@ -20,6 +24,8 @@ export interface Scene {
 }
 
 export type ScriptBlock =
+  | { type: 'episodeHeader'; text: string }
+  | { type: 'sectionHeader'; text: string }
   | { type: 'dialogue'; character: string; stageDirection: string; text: string }
   | { type: 'action'; text: string }
   | { type: 'audioEvent'; label: string; text: string }
@@ -33,6 +39,23 @@ export function parseScript(text: string): Scene[] {
   const scenes: Scene[] = []
   let currentScene: Scene | null = null
   let sceneCounter = 0
+
+  function ensureScene(): Scene {
+    if (currentScene) return currentScene
+
+    sceneCounter++
+    currentScene = {
+      id: `scene-${sceneCounter}`,
+      number: '1-1',
+      timeOfDay: '',
+      interior: '',
+      location: '',
+      characters: [],
+      blocks: [],
+    }
+    scenes.push(currentScene)
+    return currentScene
+  }
 
   for (const rawLine of lines) {
     const line = rawLine.trimEnd()
@@ -56,29 +79,31 @@ export function parseScript(text: string): Scene[] {
       continue
     }
 
-    if (!currentScene) {
-      sceneCounter++
-      currentScene = {
-        id: `scene-${sceneCounter}`,
-        number: '1-1',
-        timeOfDay: '',
-        interior: '',
-        location: '',
-        characters: [],
-        blocks: [],
-      }
-      scenes.push(currentScene)
+    if (
+      EPISODE_HEADER_CN_REGEX.test(trimmed)
+      || EPISODE_HEADER_EN_REGEX.test(trimmed)
+      || EPISODE_HEADER_SEASON_REGEX.test(trimmed)
+    ) {
+      ensureScene().blocks.push({ type: 'episodeHeader', text: trimmed })
+      continue
     }
+
+    if (SECTION_HEADER_REGEX.test(trimmed)) {
+      ensureScene().blocks.push({ type: 'sectionHeader', text: trimmed })
+      continue
+    }
+
+    const activeScene = ensureScene()
 
     const charactersMatch = trimmed.match(CHARACTERS_LINE_REGEX)
     if (charactersMatch) {
-      currentScene.characters = charactersMatch[1].split(/[、,，]/).map(s => s.trim()).filter(Boolean)
+      activeScene.characters = charactersMatch[1].split(/[、,，]/).map(s => s.trim()).filter(Boolean)
       continue
     }
 
     const audioEventMatch = trimmed.match(AUDIO_EVENT_REGEX)
     if (audioEventMatch) {
-      currentScene.blocks.push({
+      activeScene.blocks.push({
         type: 'audioEvent',
         label: audioEventMatch[1].trim(),
         text: audioEventMatch[2].trim(),
@@ -88,7 +113,7 @@ export function parseScript(text: string): Scene[] {
 
     const uiEventMatch = trimmed.match(UI_EVENT_REGEX)
     if (uiEventMatch) {
-      currentScene.blocks.push({
+      activeScene.blocks.push({
         type: 'uiEvent',
         label: uiEventMatch[1].trim(),
         text: uiEventMatch[2].trim(),
@@ -97,19 +122,19 @@ export function parseScript(text: string): Scene[] {
     }
 
     if (SQUARE_BRACKET_NOTE_REGEX.test(trimmed) || FULLWIDTH_BRACKET_NOTE_REGEX.test(trimmed)) {
-      currentScene.blocks.push({ type: 'bracketNote', text: trimmed })
+      activeScene.blocks.push({ type: 'bracketNote', text: trimmed })
       continue
     }
 
     const actionMatch = trimmed.match(ACTION_LINE_PARSE_REGEX)
     if (actionMatch) {
-      currentScene.blocks.push({ type: 'action', text: actionMatch[1].trim() })
+      activeScene.blocks.push({ type: 'action', text: actionMatch[1].trim() })
       continue
     }
 
     const dialogueMatch = trimmed.match(DIALOGUE_LINE_PARSE_REGEX)
     if (dialogueMatch && dialogueMatch[1].length <= 20) {
-      currentScene.blocks.push({
+      activeScene.blocks.push({
         type: 'dialogue',
         character: dialogueMatch[1].trim(),
         stageDirection: dialogueMatch[2]?.trim() ?? '',
@@ -118,7 +143,7 @@ export function parseScript(text: string): Scene[] {
       continue
     }
 
-    currentScene.blocks.push({ type: 'action', text: trimmed })
+    activeScene.blocks.push({ type: 'action', text: trimmed })
   }
 
   return scenes

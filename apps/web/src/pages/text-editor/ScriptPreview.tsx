@@ -7,6 +7,28 @@ interface ScriptPreviewProps {
 }
 
 function BlockRenderer({ block }: { block: ScriptBlock }) {
+  if (block.type === 'episodeHeader') {
+    return (
+      <div className="flex items-start py-2 px-4 bg-fuchsia-50 border-l-4 border-fuchsia-400 rounded-r-md">
+        <span className="inline-flex items-center px-2 py-0.5 bg-fuchsia-100 text-fuchsia-700 text-xs font-medium rounded mr-3 shrink-0">
+          集头
+        </span>
+        <span className="text-fuchsia-800 text-sm font-medium flex-1">{block.text}</span>
+      </div>
+    )
+  }
+
+  if (block.type === 'sectionHeader') {
+    return (
+      <div className="flex items-start py-2 px-4 bg-cyan-50 border-l-4 border-cyan-400 rounded-r-md">
+        <span className="inline-flex items-center px-2 py-0.5 bg-cyan-100 text-cyan-700 text-xs font-medium rounded mr-3 shrink-0">
+          章节
+        </span>
+        <span className="text-cyan-800 text-sm font-medium flex-1">{block.text}</span>
+      </div>
+    )
+  }
+
   if (block.type === 'dialogue') {
     return (
       <div className="flex items-start py-2 px-4 bg-orange-50 border-l-4 border-orange-400 rounded-r-md">
