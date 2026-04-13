@@ -1,4 +1,4 @@
-import { EditorContent } from '@tiptap/react'
+import { EditorContent, useEditorState } from '@tiptap/react'
 import { useState, useRef, useEffect, RefObject } from 'react'
 import type { ScriptContent } from '../../shared/types'
 import { useLineNumbers, useEditorConfig, LineNumbersMode } from './hooks'
@@ -45,8 +45,13 @@ export function ScriptEditor({
     setLineNumbersMode(prev => prev === 'line' ? 'scene' : 'line')
   }
 
-  const characterCount = editor?.storage.characterCount.characters() ?? 0
-  const wordCount = editor?.storage.characterCount.words() ?? 0
+  const { characterCount, wordCount } = useEditorState({
+    editor,
+    selector: ({ editor: e }) => ({
+      characterCount: e.storage.characterCount.characters(),
+      wordCount: e.storage.characterCount.words(),
+    }),
+  })
 
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">

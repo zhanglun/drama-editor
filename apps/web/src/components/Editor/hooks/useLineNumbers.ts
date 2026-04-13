@@ -71,11 +71,15 @@ export function useLineNumbers({
   useEffect(() => {
     if (!editor) return
     calculateLineHeights()
-  }, [editor, calculateLineHeights])
 
-  useEffect(() => {
-    if (!editor) return
-    calculateLineHeights()
+    const updateHandler = () => {
+      calculateLineHeights()
+    }
+
+    editor.on('update', updateHandler)
+    return () => {
+      editor.off('update', updateHandler)
+    }
   }, [editor, lineNumbersMode, calculateLineHeights])
 
   useEffect(() => {

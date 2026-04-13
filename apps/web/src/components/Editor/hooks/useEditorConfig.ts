@@ -9,7 +9,7 @@ import OrderedList from '@tiptap/extension-ordered-list'
 import CodeBlock from '@tiptap/extension-code-block'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import ListItem from '@tiptap/extension-list-item'
-import { Scene, Dialogue, Action, Transition, SlashCommand, CharacterMention, CharacterMentionNode } from '../../../features/editor/extensions'
+import { Scene, Dialogue, Action, Transition, SlashCommand, CharacterMention, CharacterMentionNode, PasteHandler } from '../../../features/editor/extensions'
 import { extractCharacters } from '../../../shared/lib/character-extractor'
 import { useScriptStore } from '../../../entities/script'
 import type { ScriptContent } from '../../../shared/types'
@@ -55,6 +55,7 @@ export function useEditorConfig({ content, onChange, placeholder, onUpdate }: Us
       SlashCommand,
       CharacterMention.configure({ characters }),
       CharacterMentionNode,
+      PasteHandler,
     ],
     content: content || { type: 'doc', content: [] },
     onUpdate: ({ editor }) => {

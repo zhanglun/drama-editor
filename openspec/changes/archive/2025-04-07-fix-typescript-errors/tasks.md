@@ -1,0 +1,14 @@
+## 1. 实体层修复
+- [x] 1.1 修复 Character selectors
+  - [x] 1.2 修复 Version selectors
+  - [x] 1.3 修复实体导出
+  - [x] 2.1 修复 Script API 返回类型
+  - [x] 2.2 修复 Version API 返回类型
+  - [x] 2.3 统一所有 API 函数返回类型
+- [x] 3.1 修复 Script Store API 调用
+  - [x] 3.2 对齐所有 Store 与 API 类型
+- [x] 4.1 修复 Auth 相关错误
+  - [x] 4.2 修复 Canvas 类型错误
+  - [x] 5.1 运行 TypeScript 检查
+  - [x] 5.2 运行构建验证
+  - [x] 5.3 运行功能验证
