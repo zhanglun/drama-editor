@@ -1,6 +1,6 @@
 import { FileText, Import, Timer, Type } from 'lucide-react'
 import { useRef } from 'react'
-import type { ScriptStats } from '../model/script-stats'
+import type { ScriptStats } from '../../model'
 
 interface ScriptWorkspaceHeaderProps {
   fileName: string
@@ -29,7 +29,7 @@ export function ScriptWorkspaceHeader({
             {fileName || '未命名剧本'}
           </div>
           <div className="mt-1 text-sm text-[#91878c]">
-            当前目录共 {episodeCount} 集，右侧可在编辑与预览之间切换。
+            当前目录共 {episodeCount} 集，右侧支持完整剧本编辑与预览定位。
           </div>
         </div>
 

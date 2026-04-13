@@ -1,13 +1,13 @@
 import { FileText, ListVideo } from 'lucide-react'
-import type { EpisodeSegment } from '../model/episode-directory'
+import type { EpisodeSegment } from '../../model'
 
-interface EpisodeSidebarProps {
+interface EpisodeDirectoryProps {
   episodes: EpisodeSegment[]
   activeEpisodeId?: string
   onSelect: (index: number) => void
 }
 
-export function EpisodeSidebar({ episodes, activeEpisodeId, onSelect }: EpisodeSidebarProps) {
+export function EpisodeDirectory({ episodes, activeEpisodeId, onSelect }: EpisodeDirectoryProps) {
   return (
     <div className="flex h-full flex-col bg-[#211d1d] text-[#f5f2f2]">
       <div className="border-b border-white/8 px-4 py-4">

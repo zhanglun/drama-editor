@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseScript } from './parseScript'
+import { parseScript } from './model'
 import { SCRIPT_FIXTURE_DOCUMENTS, SCRIPT_FIXTURE_LINES } from './script-fixtures'
 
 describe('parseScript', () => {

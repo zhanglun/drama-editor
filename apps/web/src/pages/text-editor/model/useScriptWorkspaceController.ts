@@ -3,18 +3,31 @@ import mammoth from 'mammoth'
 import { extractEpisodeSegments } from './episode-directory'
 import { getScriptStats } from './script-stats'
 
-export type TextEditorTab = 'edit' | 'preview'
+export type ScriptWorkspaceTab = 'edit' | 'preview'
 
-export function useTextEditorWorkspace() {
-  const [content, setContent] = useState('')
-  const [fileName, setFileName] = useState('')
-  const [activeTab, setActiveTab] = useState<TextEditorTab>('edit')
+export interface UseScriptWorkspaceControllerOptions {
+  initialContent?: string
+  initialFileName?: string
+  initialTab?: ScriptWorkspaceTab
+}
+
+export function useScriptWorkspaceController(options: UseScriptWorkspaceControllerOptions = {}) {
+  const {
+    initialContent = '',
+    initialFileName = '',
+    initialTab = 'edit',
+  } = options
+
+  const [content, setContent] = useState(initialContent)
+  const [fileName, setFileName] = useState(initialFileName)
+  const [activeTab, setActiveTab] = useState<ScriptWorkspaceTab>(initialTab)
   const [activeEpisodeIndex, setActiveEpisodeIndex] = useState(0)
 
   const episodes = useMemo(() => extractEpisodeSegments(content), [content])
-  const activeEpisode = episodes[Math.min(activeEpisodeIndex, episodes.length - 1)] ?? episodes[0]
-  const deferredContent = useDeferredValue(content)
+  const activeEpisode = episodes[Math.min(activeEpisodeIndex, episodes.length - 1)] ?? episodes[0] ?? null
+  const previewContent = useDeferredValue(content)
   const stats = useMemo(() => getScriptStats(content), [content])
+  const isEmpty = content.trim().length === 0
 
   useEffect(() => {
     if (activeEpisodeIndex > episodes.length - 1) {
@@ -22,15 +35,15 @@ export function useTextEditorWorkspace() {
     }
   }, [activeEpisodeIndex, episodes.length])
 
-  const handleEpisodeSelect = useCallback((index: number) => {
+  const selectEpisode = useCallback((index: number) => {
     startTransition(() => {
       setActiveEpisodeIndex(index)
     })
   }, [])
 
-  const handleTabChange = useCallback((tab: string) => {
+  const handleTabChange = useCallback((tab: ScriptWorkspaceTab | string) => {
     startTransition(() => {
-      setActiveTab(tab as TextEditorTab)
+      setActiveTab(tab as ScriptWorkspaceTab)
     })
   }, [])
 
@@ -38,7 +51,7 @@ export function useTextEditorWorkspace() {
     setContent(nextContent)
   }, [])
 
-  const handleFileImport = useCallback(async (file: File) => {
+  const importFile = useCallback(async (file: File) => {
     const extension = file.name.split('.').pop()?.toLowerCase()
 
     if (extension === 'txt') {
@@ -56,17 +69,17 @@ export function useTextEditorWorkspace() {
   }, [])
 
   return {
+    content,
+    isEmpty,
     fileName,
     activeTab,
-    content,
     episodes,
     activeEpisode,
-    previewContent: deferredContent,
+    previewContent,
     stats,
-    setContent,
-    onTabChange: handleTabChange,
-    onEpisodeSelect: handleEpisodeSelect,
-    onContentChange: handleContentChange,
-    onFileImport: handleFileImport,
+    setActiveTab: handleTabChange,
+    setContent: handleContentChange,
+    selectEpisode,
+    importFile,
   }
 }

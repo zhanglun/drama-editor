@@ -2,107 +2,116 @@
 
 ## 模块目标
 
-`text-editor` 是一个围绕“纯文本文本剧本”构建的小型子模块，负责三件事：
+`text-editor` 是一个围绕“纯文本文本剧本工作区”构建的子模块，负责四件事：
 
-1. 把用户输入的剧本文本解析成结构化数据
-2. 将结构化数据渲染为可读的预览界面
-3. 为编辑器高亮、统计、预览提供一致的语法基础
+1. 维护完整剧本文本的编辑、导入和导航状态
+2. 把完整文本解析成目录索引和结构化预览
+3. 提供可单独复用的编辑器、预览器、目录组件
+4. 提供一套可组装的工作区壳子与编辑面板策略
 
-它当前主要服务于 `TextEditorPage.tsx`。
+它当前主要服务于 `TextEditorPage.tsx`，但不再是只能整页使用的一次性实现。
 
 ## 目录结构
 
 ```text
 text-editor/
   README.md
-  parseScript.ts
-  ScriptPreview.tsx
-  script-fixtures.ts
-  parseScript.test.ts
+  index.ts
+  model/
+    ScriptWorkspaceContext.tsx
+    episode-directory.ts
+    parseScript.ts
+    script-stats.ts
+    useScriptWorkspaceController.ts
+    index.ts
   script-syntax/
     constants.ts
     bracket-events.ts
     patterns.ts
     index.ts
     patterns.test.ts
+  ui/
+    primitives/
+      EpisodeDirectory.tsx
+      MonacoScriptEditor.tsx
+      ScriptPreview.tsx
+      monaco-theme.ts
+      index.ts
+    panels/
+      ScriptEditPanel.tsx
+      ScriptImportEmptyState.tsx
+      ScriptPreviewPanel.tsx
+      ScriptWorkspaceHeader.tsx
+      index.ts
+    workspace/
+      ScriptWorkspaceShell.tsx
+      index.ts
+  script-fixtures.ts
+  parseScript.test.ts
 ```
 
-## 文件职责
+## 分层职责
 
-### `parseScript.ts`
+### `model/*`
 
-把纯文本解析为 `Scene[]`。
+headless 状态与解析层，不依赖具体 UI。
 
-当前支持的 block 类型包括：
+- `useScriptWorkspaceController.ts`
+  对外暴露完整工作区状态：
+  - `content`
+  - `isEmpty`
+  - `episodes`
+  - `activeEpisode`
+  - `activeTab`
+  - `stats`
+  - `setContent`
+  - `setActiveTab`
+  - `selectEpisode`
+  - `importFile`
+- `episode-directory.ts`
+  把完整剧本文本切成 `EpisodeSegment[]`，供目录导航、滚动定位和统计使用。
+- `parseScript.ts`
+  把纯文本解析为 `Scene[]`，供预览渲染使用。
+- `script-stats.ts`
+  提供字数、去空格字符数、阅读时长等统计。
+- `ScriptWorkspaceContext.tsx`
+  为整套工作区组件提供可选 context，减少内部 props drilling。
 
-- `episodeHeader`
-- `sectionHeader`
-- `dialogue`
-- `action`
-- `audioEvent`
-- `uiEvent`
-- `bracketNote`
+### `ui/primitives/*`
 
-### `ScriptPreview.tsx`
+可单独复用的基础组件，尽量不带业务流程。
 
-消费 `parseScript()` 的输出，负责把解析结果渲染成卡片式预览。
+- `MonacoScriptEditor.tsx`
+  纯编辑器 primitive，只负责完整剧本文本的编辑、高亮和定位。
+- `ScriptPreview.tsx`
+  纯预览 primitive，只负责解析文本并渲染预览卡片。
+- `EpisodeDirectory.tsx`
+  纯目录 primitive，只负责展示目录和触发导航。
+- `monaco-theme.ts`
+  Monaco 语法高亮与主题注册。
 
-### `script-syntax/constants.ts`
+### `ui/panels/*`
 
-维护语法词表和标签表，例如：
+带业务语义的面板层。
 
-- `AUDIO_EVENT_LABELS`
-- `UI_EVENT_LABELS`
-- 场次时间词
-- 场次内外景词
-- 章节标题词
+- `ScriptEditPanel.tsx`
+  编辑 tab 的业务面板。内部根据空状态策略决定：
+  - 直接进入编辑器
+  - 展示导入空状态
+  - 渲染业务自定义空状态
+- `ScriptImportEmptyState.tsx`
+  默认业务空状态，占位承接后续真正的上传组件。
+- `ScriptPreviewPanel.tsx`
+  对预览 primitive 做容器包装，统一工作区内样式。
+- `ScriptWorkspaceHeader.tsx`
+  工作区头部，包括文件名、统计、导入入口。
 
-如果只是新增标签，优先改这里。
+### `ui/workspace/*`
 
-### `script-syntax/bracket-events.ts`
+整页布局壳子。
 
-维护 `[]` / `【】` 强标记相关 regex，包括：
-
-- `audioEvent`
-- `uiEvent`
-- 兜底 `bracketNote`
-
-### `script-syntax/patterns.ts`
-
-维护剧本文本基础语法 regex，包括：
-
-- 集头
-- 章节头
-- 场次头
-- 对白
-- 动作
-- 舞台指示
-- 人物行
-
-这里按用途区分为：
-
-- `HIGHLIGHT`
-- `PARSE`
-- `STATS`
-
-不要在页面或解析器里再单独手写一套同语义 regex。
-
-### `script-fixtures.ts`
-
-维护共享样本源。
-
-用途：
-
-- 给测试复用
-- 作为当前支持语法的标准输入样例集合
-
-### `parseScript.test.ts`
-
-验证解析器是否能正确输出结构化 block。
-
-### `script-syntax/patterns.test.ts`
-
-验证共享语法 regex 是否仍然匹配预期样本。
+- `ScriptWorkspaceShell.tsx`
+  负责左目录 + 右侧 tab 工作区的布局，不持有业务状态。
 
 ## 设计原则
 
@@ -110,39 +119,24 @@ text-editor/
 
 高亮、解析、统计都应优先复用 `script-syntax/*` 中的语法定义。
 
-允许不同用途使用不同 regex 版本，例如：
+### 2. 完整剧本是唯一编辑源
 
-- `SCENE_HEADER_HIGHLIGHT_REGEX`
-- `SCENE_HEADER_PARSE_REGEX`
+目录切换只负责定位，不负责切分右侧编辑器内容。
 
-但它们必须来自同一套语法设计，而不是各写各的。
+### 3. 编辑器 primitive 不承载业务空状态
 
-### 2. 高亮与解析不要求完全同一条 regex
+`MonacoScriptEditor` 只负责编辑；“空状态展示上传组件还是直接开始编辑”应由 `ScriptEditPanel` 决定。
 
-这是刻意设计：
+### 4. 工作区能力既能整套用，也能拆开用
 
-- 高亮可以稍宽松，目标是让用户看得见结构
-- 解析可以更严格，目标是让结构化结果稳定
+优先保持：
 
-### 3. 方括号事件优先走标签表驱动
+- `useScriptWorkspaceController`
+- `EpisodeDirectory`
+- `MonacoScriptEditor`
+- `ScriptPreview`
 
-新增类似：
-
-- `[直播提示：...]`
-- `[人群声：...]`
-
-时，优先修改标签表，而不是直接在业务文件里新增一条独立 regex。
-
-### 4. 未识别的强标记先兜底，不要误判
-
-对于未知的 `[...]` 或 `【...】`，优先进入：
-
-- `bracketNote`
-
-而不是误判成：
-
-- `dialogue`
-- `character`
+都可以单独使用。
 
 ## 当前支持的语法类型
 
@@ -200,27 +194,11 @@ text-editor/
 
 ### 场景 1：新增一个音频事件标签
 
-例如新增：
-
-```text
-[人群声：会场逐渐喧闹]
-```
-
-修改顺序：
-
 1. 改 `script-syntax/constants.ts`
 2. 看 `parseScript.test.ts` 是否需要补样例
 3. 运行测试
 
 ### 场景 2：新增一个 UI 事件标签
-
-例如新增：
-
-```text
-[直播提示：主播已上线]
-```
-
-修改顺序：
 
 1. 改 `script-syntax/constants.ts`
 2. 补 `script-fixtures.ts`
@@ -231,13 +209,19 @@ text-editor/
 
 例如新增“转场”。
 
-修改顺序建议：
-
 1. 在 `script-syntax/patterns.ts` 定义 regex
-2. 在 `TextEditorPage.tsx` 接入高亮 token
-3. 在 `parseScript.ts` 接入结构化解析
-4. 在 `ScriptPreview.tsx` 增加展示
+2. 在 `ui/primitives/monaco-theme.ts` 接入高亮 token
+3. 在 `model/parseScript.ts` 接入结构化解析
+4. 在 `ui/primitives/ScriptPreview.tsx` 增加展示
 5. 在 fixtures 和测试中补样例
+
+### 场景 4：调整编辑 tab 空状态
+
+优先改 `ui/panels/ScriptEditPanel.tsx`：
+
+1. `emptyStateStrategy="import"`：默认显示业务上传空状态
+2. `emptyStateStrategy="editable"`：空状态直接进入编辑器
+3. `emptyStateStrategy="custom"`：由业务侧传 `renderEmptyState`
 
 ## 测试方式
 
@@ -250,15 +234,17 @@ pnpm --filter @drama-editor/web test -- src/pages/text-editor/parseScript.test.t
 ## 不建议做的事
 
 - 不要在 `TextEditorPage.tsx` 重新堆一套独立 regex
-- 不要在 `parseScript.ts` 再复制共享语法常量
-- 不要把导出模块那套 `parseScript` 混进这个子模块
-- 不要把 Theme 配置和语法定义混为一层
+- 不要在 `model/parseScript.ts` 再复制共享语法常量
+- 不要把目录解析、预览解析、编辑器空状态混写在一个组件里
+- 不要把 `MonacoScriptEditor` 做成绑定业务上传流程的大组件
 
 ## 一句话理解
 
 如果你要修改 `text-editor`：
 
-- **改语法，先看 `script-syntax`**
-- **改解析，去 `parseScript.ts`**
-- **改预览，去 `ScriptPreview.tsx`**
-- **改样例，去 `script-fixtures.ts` 和测试**
+- **改工作区状态，去 `model/useScriptWorkspaceController.ts`**
+- **改目录解析，去 `model/episode-directory.ts`**
+- **改预览解析，去 `model/parseScript.ts`**
+- **改纯编辑器，去 `ui/primitives/MonacoScriptEditor.tsx`**
+- **改编辑 tab 空状态，去 `ui/panels/ScriptEditPanel.tsx`**
+- **改整页布局，去 `ui/workspace/ScriptWorkspaceShell.tsx`**

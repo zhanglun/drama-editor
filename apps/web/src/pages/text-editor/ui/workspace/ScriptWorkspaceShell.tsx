@@ -1,10 +1,10 @@
 import * as Tabs from '@radix-ui/react-tabs'
 import type { ReactNode } from 'react'
-import type { TextEditorTab } from '../model/useTextEditorWorkspace'
+import type { ScriptWorkspaceTab } from '../../model'
 
 interface ScriptWorkspaceShellProps {
-  activeTab: TextEditorTab
-  onTabChange: (tab: string) => void
+  activeTab: ScriptWorkspaceTab
+  onTabChange: (tab: ScriptWorkspaceTab | string) => void
   sidebar: ReactNode
   header: ReactNode
   editPane: ReactNode

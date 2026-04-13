@@ -11,7 +11,7 @@ import {
   SECTION_HEADER_REGEX,
   SQUARE_BRACKET_NOTE_REGEX,
   UI_EVENT_REGEX,
-} from './script-syntax'
+} from '../script-syntax'
 
 export interface Scene {
   id: string

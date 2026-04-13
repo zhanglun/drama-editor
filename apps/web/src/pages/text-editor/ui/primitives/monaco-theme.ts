@@ -12,7 +12,7 @@ import {
   SQUARE_BRACKET_NOTE_REGEX,
   STAGE_DIRECTION_INLINE_REGEX,
   UI_EVENT_REGEX,
-} from '../script-syntax'
+} from '../../script-syntax'
 
 let isRegistered = false
 

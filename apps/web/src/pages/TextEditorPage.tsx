@@ -1,10 +1,10 @@
 import {
-  EpisodeSidebar,
-  MonacoScriptEditor,
-  ScriptPreview,
+  EpisodeDirectory,
+  ScriptEditPanel,
+  ScriptPreviewPanel,
   ScriptWorkspaceHeader,
   ScriptWorkspaceShell,
-  useTextEditorWorkspace,
+  useScriptWorkspaceController,
 } from './text-editor'
 
 export function TextEditorPage() {
@@ -16,22 +16,22 @@ export function TextEditorPage() {
     activeEpisode,
     previewContent,
     stats,
-    onTabChange,
-    onEpisodeSelect,
-    onContentChange,
-    onFileImport,
-  } = useTextEditorWorkspace()
+    setActiveTab,
+    selectEpisode,
+    setContent,
+    importFile,
+  } = useScriptWorkspaceController()
 
   return (
     <div className="flex flex-col">
       <ScriptWorkspaceShell
         activeTab={activeTab}
-        onTabChange={onTabChange}
+        onTabChange={setActiveTab}
         sidebar={(
-          <EpisodeSidebar
+          <EpisodeDirectory
             episodes={episodes}
             activeEpisodeId={activeEpisode?.id}
-            onSelect={onEpisodeSelect}
+            onSelect={selectEpisode}
           />
         )}
         header={(
@@ -39,24 +39,23 @@ export function TextEditorPage() {
             fileName={fileName}
             episodeCount={episodes.length}
             stats={stats}
-            onImport={onFileImport}
+            onImport={importFile}
           />
         )}
         editPane={(
-          <MonacoScriptEditor
-            value={content}
-            onChange={onContentChange}
+          <ScriptEditPanel
+            content={content}
+            onChange={setContent}
             revealLine={activeEpisode?.startLine}
+            emptyStateStrategy="import"
+            onImport={importFile}
           />
         )}
         previewPane={(
-          <div className="h-full overflow-hidden rounded-xl border border-[#33282e] bg-[#1a1618]">
-            <ScriptPreview
-              content={previewContent}
-              className="h-full overflow-y-auto px-5 py-5"
-              revealLine={activeEpisode?.startLine}
-            />
-          </div>
+          <ScriptPreviewPanel
+            content={previewContent}
+            revealLine={activeEpisode?.startLine}
+          />
         )}
       />
     </div>
