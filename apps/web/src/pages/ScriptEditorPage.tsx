@@ -23,6 +23,7 @@ export function ScriptEditorPage() {
 
   useEffect(() => {
     if (id) {
+      setEditorContent(null)
       loadScript(id)
     }
   }, [id, loadScript])

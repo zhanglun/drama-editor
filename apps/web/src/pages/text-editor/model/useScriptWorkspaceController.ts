@@ -54,18 +54,25 @@ export function useScriptWorkspaceController(options: UseScriptWorkspaceControll
   const importFile = useCallback(async (file: File) => {
     const extension = file.name.split('.').pop()?.toLowerCase()
 
-    if (extension === 'txt') {
-      const text = await file.text()
-      setContent(text)
-    } else if (extension === 'docx') {
-      const arrayBuffer = await file.arrayBuffer()
-      const result = await mammoth.extractRawText({ arrayBuffer })
-      setContent(result.value)
-    }
+    try {
+      if (extension === 'txt') {
+        const text = await file.text()
+        setContent(text)
+      } else if (extension === 'docx') {
+        const arrayBuffer = await file.arrayBuffer()
+        const result = await mammoth.extractRawText({ arrayBuffer })
+        setContent(result.value)
+      } else {
+        console.warn(`不支持的文件格式: .${extension}`)
+        return
+      }
 
-    setFileName(file.name)
-    setActiveEpisodeIndex(0)
-    setActiveTab('edit')
+      setFileName(file.name)
+      setActiveEpisodeIndex(0)
+      setActiveTab('edit')
+    } catch (error) {
+      console.error('导入文件失败:', error)
+    }
   }, [])
 
   return {

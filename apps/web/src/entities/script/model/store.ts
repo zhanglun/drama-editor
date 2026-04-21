@@ -107,7 +107,7 @@ export const useScriptStore = create<ScriptStore>()(
         },
 
         loadScript: async (id: string) => {
-          set({ isLoading: true, error: null })
+          set({ isLoading: true, error: null, currentScript: null })
           try {
             const response = await api.getScript(id)
             if (response.error) {
@@ -170,7 +170,7 @@ export const useScriptStore = create<ScriptStore>()(
         setLoading: (loading) => set({ isLoading: loading }),
         setError: (error) => set({ error }),
       }),
-      { name: 'script-store' }
+      { name: 'script-store', partialize: (state) => ({ scripts: state.scripts }) }
     ),
     { name: 'script-storage' }
   )
