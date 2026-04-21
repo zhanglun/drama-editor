@@ -47,7 +47,7 @@ export function TextEditorPage() {
             content={content}
             onChange={setContent}
             revealLine={activeEpisode?.startLine}
-            emptyStateStrategy="import"
+            emptyStateStrategy="editable"
             onImport={importFile}
           />
         )}

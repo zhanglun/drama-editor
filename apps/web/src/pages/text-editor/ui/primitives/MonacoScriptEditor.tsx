@@ -1,6 +1,10 @@
-import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react'
+import Editor, { loader, type BeforeMount, type OnMount } from '@monaco-editor/react'
 import { useCallback, useEffect, useRef } from 'react'
 import { registerScriptMonaco } from './monaco-theme'
+
+import * as monaco from 'monaco-editor'
+
+loader.config({ monaco })
 
 interface MonacoScriptEditorProps {
   value: string

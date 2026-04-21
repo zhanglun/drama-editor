@@ -1,4 +1,5 @@
 import { useEditor } from '@tiptap/react'
+import { useEffect } from 'react'
 import StarterKit from '@tiptap/starter-kit'
 import CharacterCount from '@tiptap/extension-character-count'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -97,6 +98,15 @@ export function useEditorConfig({ content, onChange, placeholder, onUpdate }: Us
       },
     },
   })
+
+  useEffect(() => {
+    if (editor && content) {
+      const currentJSON = editor.getJSON()
+      if (JSON.stringify(currentJSON) !== JSON.stringify(content)) {
+        editor.commands.setContent(content)
+      }
+    }
+  }, [content, editor])
 
   const insertWithFlash = (insertFn: () => boolean) => {
     if (!editor) return
