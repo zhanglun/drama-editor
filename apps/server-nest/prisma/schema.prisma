@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Script {
+  id          String   @id @default(uuid()) @map("id") @db.Uuid
+  title       String   @map("title")
+  description String?  @map("description") @db.Text
+  content     Json?    @map("content")
+  canvasState Json?    @map("canvas_state")
+  author      String?  @map("author")
+  genre       String?  @map("genre")
+  logline     String?  @map("logline") @db.Text
+  notes       String?  @map("notes") @db.Text
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  characters     Character[]
+  scriptVersions ScriptVersion[]
+
+  @@map("scripts")
+}
+
+model Character {
+  id             String   @id @default(uuid()) @map("id") @db.Uuid
+  scriptId       String   @map("script_id") @db.Uuid
+  name           String   @map("name")
+  description    String?  @map("description") @db.Text
+  avatarUrl      String?  @map("avatar_url")
+  traits         Json?    @map("traits")
+  color          String?  @map("color")
+  canvasPosition Json?    @map("canvas_position")
+  createdAt      DateTime? @default(now()) @map("created_at")
+
+  script    Script             @relation(fields: [scriptId], references: [id])
+  variants  CharacterVariant[]
+
+  @@map("characters")
+}
+
+model ScriptVersion {
+  id            String   @id @default(uuid()) @map("id") @db.Uuid
+  scriptId      String   @map("script_id") @db.Uuid
+  versionNumber Int      @map("version_number")
+  content       Json?    @map("content")
+  changeSummary String?  @map("change_summary") @db.Text
+  createdAt     DateTime? @default(now()) @map("created_at")
+
+  script Script @relation(fields: [scriptId], references: [id])
+
+  @@unique([scriptId, versionNumber])
+  @@map("script_versions")
+}
+
+model CharacterVariant {
+  id              String           @id @default(uuid()) @map("id") @db.Uuid
+  characterId     String           @map("character_id") @db.Uuid
+  parentVariantId String?          @map("parent_variant_id") @db.Uuid
+  name            String           @map("name")
+  description     String?          @map("description") @db.Text
+  imageUrl        String?          @map("image_url")
+  traits          Json?            @map("traits")
+  color           String?          @map("color")
+  canvasPosition  Json?            @map("canvas_position")
+  createdAt       DateTime?         @default(now()) @map("created_at")
+  updatedAt       DateTime?         @updatedAt @map("updated_at")
+
+  parentVariant  CharacterVariant?  @relation("VariantTree", fields: [parentVariantId], references: [id])
+  childVariants  CharacterVariant[] @relation("VariantTree")
+  characterRef   Character          @relation(fields: [characterId], references: [id])
+  scenes         VariantScene[]
+
+  @@map("character_variants")
+}
+
+model VariantScene {
+  variantId String @map("variant_id") @db.Uuid
+  sceneId   String @map("scene_id")
+
+  variant CharacterVariant @relation(fields: [variantId], references: [id])
+
+  @@id([variantId, sceneId])
+  @@map("variant_scenes")
+}

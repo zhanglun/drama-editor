@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "pnpm --filter @drama-editor/web dev",
     "build": "pnpm --filter @drama-editor/web build",
-    "server": "cd apps/server && go run cmd/main.go",
+    "server": "pnpm --filter @drama-editor/server-nest start:dev",
+    "server:prod": "pnpm --filter @drama-editor/server-nest start:prod",
     "seed": "tsx supabase/seeds/seed-runner.ts",
     "seed:check": "tsx supabase/seeds/seed-runner.ts --check",
     "lint": "pnpm -r lint",
